@@ -13,7 +13,12 @@ e.g. Sheng, is richer than either):
      give the model explicit translation supervision — known to strengthen
      cross-lingual representation alignment in small bilingual models.
 
-Usage: python -m pretraining.synth_codeswitch [--pairs-file data/full/raw/parallel.tsv]
+Pairs come from parallel_sentences.tsv, the sentence-aligned by-product of
+the TinyStories MT job (OPUS-100 has no en-sw config — verified 2026-07-29).
+Consequence, stated in DATA.md: the Swahili side of CS/parallel data is
+translationese story register, not natural mixed-domain text.
+
+Usage: python -m pretraining.synth_codeswitch [--pairs-file data/full/raw/parallel_sentences.tsv]
 """
 
 from __future__ import annotations
@@ -29,7 +34,7 @@ RAW = Path("data/full/raw")
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pairs-file", default=str(RAW / "parallel.tsv"))
+    parser.add_argument("--pairs-file", default=str(RAW / "parallel_sentences.tsv"))
     parser.add_argument("--switch-p", type=float, default=0.4)
     parser.add_argument("--seed", type=int, default=1234)
     parser.add_argument("--cs-fraction", type=float, default=0.6,

@@ -8,7 +8,11 @@ source end up in the final train.bin, since the sampler draws uniformly:
   en_web       200M tok   HuggingFaceFW/fineweb-edu sample-10BT (ODC-BY), streamed
   sw_web       550M tok   HuggingFaceFW/fineweb-2 swh_Latn (ODC-BY), streamed
   sw_wiki       all       wikimedia/wikipedia 20231101.sw (CC-BY-SA-3.0)
-  parallel      all       Helsinki-NLP/opus-100 en-sw (for CS synthesis + parallel data)
+
+NOTE (verified 2026-07-29): OPUS-100 has NO en-sw config — Swahili is not
+among its 100 pairs. Parallel EN-SW data is instead produced by
+translate_stories.py, which emits sentence-aligned pairs as a by-product of
+the TinyStories MT job (parallel_sentences.tsv).
 
 sw_stories (MT-translated TinyStories) and code-switched text are produced
 by separate scripts (translate_stories.py, synth_codeswitch.py) after this
@@ -40,7 +44,6 @@ TARGETS_TOKENS = {
     "en_web": 200e6,
     "sw_web": 550e6,
     "sw_wiki": None,       # take everything (~40M tokens)
-    "parallel": None,      # take everything
 }
 
 
@@ -111,26 +114,11 @@ def fetch_sw_wiki(_: None) -> dict:
     return _stream_to_file(iter(ds), "text", RAW / "sw_wiki.txt", None)
 
 
-def fetch_parallel(_: None) -> dict:
-    ds = load_dataset("Helsinki-NLP/opus-100", "en-sw", split="train")
-    out = RAW / "parallel.tsv"
-    n = 0
-    with open(out, "w", encoding="utf-8") as f:
-        for row in ds:
-            en = row["translation"]["en"].strip().replace("\t", " ")
-            sw = row["translation"]["sw"].strip().replace("\t", " ")
-            if en and sw:
-                f.write(f"{en}\t{sw}\n")
-                n += 1
-    return {"docs": n, "bytes": out.stat().st_size}
-
-
 FETCHERS = {
     "en_stories": fetch_en_stories,
     "en_web": fetch_en_web,
     "sw_web": fetch_sw_web,
     "sw_wiki": fetch_sw_wiki,
-    "parallel": fetch_parallel,
 }
 
 
@@ -147,7 +135,7 @@ def main() -> None:
     for name, fetcher in FETCHERS.items():
         if name not in only:
             continue
-        out = RAW / ("parallel.tsv" if name == "parallel" else f"{name}.txt")
+        out = RAW / f"{name}.txt"
         if name in manifest and out.exists() and out.stat().st_size == manifest[name]["bytes"]:
             print(f"[skip] {name}: already complete ({manifest[name]['bytes']/2**30:.2f} GB)")
             continue

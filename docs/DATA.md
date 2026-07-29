@@ -13,8 +13,15 @@ scripts; the data itself is gitignored — rerun the scripts to rebuild).
 | sw_web.txt | HuggingFaceFW/fineweb-2 `swh_Latn` (streamed) | ODC-BY 1.0 | ~550M tok | the Swahili backbone; native web text |
 | sw_wiki.txt | wikimedia/wikipedia `20231101.sw` | CC-BY-SA-3.0 | all (~40M tok) | clean formal register |
 | sw_stories.txt | **synthetic**: MT of en_stories via Helsinki-NLP/opus-mt-en-sw | derivative of CDLA + Apache-2.0 model | time-capped | **machine-translated (translationese)** — see Limitations |
-| cs_text.txt | **synthetic**: from Helsinki-NLP/opus-100 `en-sw` | per-corpus (OPUS) | ~40M tok | inter-sentential EN/SW alternation, p=0.4, seed 1234 |
-| parallel_docs.txt | Helsinki-NLP/opus-100 `en-sw` | per-corpus (OPUS) | ~30M tok | EN/SW sentence-pair documents |
+| cs_text.txt | **synthetic**: from parallel_sentences.tsv | derivative of the above | ~60% of pairs | inter-sentential EN/SW alternation, p=0.4, seed 1234 |
+| parallel_docs.txt | parallel_sentences.tsv (MT-job by-product) | derivative of the above | ~40% of pairs | EN/SW sentence-pair documents |
+
+**Correction (2026-07-29):** the design report proposed OPUS-100 `en-sw` for
+parallel data, but OPUS-100 has **no Swahili pair** (verified against its
+config list at fetch time). Parallel data instead comes from the TinyStories
+MT job, which is sentence-aligned by construction. Consequence: parallel and
+code-switched data are translationese story register rather than natural
+mixed-domain text — a stated limitation.
 
 Mixture control: the training sampler draws uniformly over `train.bin`, so
 the mixture ratio equals the token counts actually written (recorded in
@@ -49,7 +56,7 @@ content anywhere in the pipeline.
 
 ```
 python -m pretraining.build_corpus
-python -m pretraining.synth_codeswitch
 python -m pretraining.translate_stories --max-hours 2.5
+python -m pretraining.synth_codeswitch
 python -m pretraining.prepare_full_data
 ```

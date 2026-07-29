@@ -92,17 +92,41 @@ def main() -> None:
         return
 
     out_path = RAW / "sw_stories.txt"
+    pairs_path = RAW / "parallel_sentences.tsv"
     deadline = time.time() + args.max_hours * 3600
-    n, written = 0, 0
-    with open(out_path, "w", encoding="utf-8") as f:
+    n, written, n_pairs = 0, 0, 0
+    # Cross-story batching: flatten sentences from a group of stories into
+    # full GPU batches (a single story averages only ~9 sentences, which
+    # wastes most of a 48-slot batch — measured 8.5 stories/s unbatched).
+    GROUP = 16
+    with open(out_path, "w", encoding="utf-8") as f, \
+         open(pairs_path, "w", encoding="utf-8") as pf:
+        group: list[list[str]] = []
         for story in stories:
-            sw = " ".join(translate_sentences(tok, model, SENT_SPLIT.split(story)))
-            f.write(sw.strip() + "\n\n")
-            written += len(sw.encode("utf-8")) + 2
-            n += 1
-            if n % 500 == 0:
+            group.append(SENT_SPLIT.split(story))
+            if len(group) < GROUP:
+                continue
+            flat = [s for sents in group for s in sents]
+            translated = translate_sentences(tok, model, flat)
+            pos = 0
+            for en_sents in group:
+                sw_sents = translated[pos:pos + len(en_sents)]
+                pos += len(en_sents)
+                sw = " ".join(sw_sents)
+                f.write(sw.strip() + "\n\n")
+                written += len(sw.encode("utf-8")) + 2
+                # sentence-aligned by construction -> parallel by-product
+                for en_s, sw_s in zip(en_sents, sw_sents):
+                    en_s, sw_s = en_s.strip().replace("\t", " "), sw_s.strip().replace("\t", " ")
+                    if en_s and sw_s:
+                        pf.write(f"{en_s}\t{sw_s}\n")
+                        n_pairs += 1
+                n += 1
+            group = []
+            if n % 496 == 0:
                 left = (deadline - time.time()) / 60
-                print(f"{n:,} stories, {written/2**20:.0f} MB, {left:.0f} min left")
+                print(f"{n:,} stories, {written/2**20:.0f} MB, "
+                      f"{n_pairs:,} pairs, {left:.0f} min left")
             if time.time() >= deadline:
                 print("time cap reached")
                 break
@@ -115,6 +139,12 @@ def main() -> None:
         "est_tokens_m": round(written / 4.05 / 1e6),
         "method": f"machine-translated from TinyStoriesV2 via {MODEL_ID} "
                   f"(greedy, sentence-level); TRANSLATIONESE — see DATA.md",
+    }
+    manifest["parallel_sentences"] = {
+        "docs": n_pairs, "bytes": pairs_path.stat().st_size,
+        "sha256": hashlib.sha256(pairs_path.read_bytes()).hexdigest(),
+        "method": "sentence-aligned EN-SW pairs, by-product of the MT job "
+                  "(OPUS-100 has no en-sw config — verified 2026-07-29)",
     }
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     print(f"done: {n:,} stories, {written/2**20:.0f} MB")
