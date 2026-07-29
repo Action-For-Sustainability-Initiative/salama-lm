@@ -1,0 +1,33 @@
+# Go/no-go pilot (report section 19): a deliberately small model trained on
+# the 59M-token bilingual sample. Purpose: (1) measure real training
+# throughput on this GPU, (2) test whether Swahili at this scale learns to
+# morphological coherence, (3) exercise the full pipeline end-to-end.
+# ~11.5M params: 12*256^2*4 = 3.1M blocks + 2*16384*256 = 8.4M embeddings.
+model:
+  n_layers: 4
+  d_model: 256
+  n_heads: 4
+  d_head: 64
+  n_ctx: 512
+  d_vocab: 16384
+  act_fn: gelu
+  normalization_type: RMS
+  positional_embedding_type: rotary
+train:
+  seed: 1234
+  lr: 1.0e-3
+  betas: [0.9, 0.95]
+  weight_decay: 0.1
+  warmup_steps: 200
+  max_steps: 4600            # ~150M tokens at 64*512 tokens/step
+  micro_batch_size: 64
+  grad_accum: 1
+  grad_clip: 1.0
+  eval_every: 250
+  ckpt_every: 500
+data:
+  train_bin: data/pilot/train.bin
+  val_bins:
+    en: data/pilot/val_en.bin
+    sw: data/pilot/val_sw.bin
+out_dir: checkpoints/pilot_11m
