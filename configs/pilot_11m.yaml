@@ -20,8 +20,11 @@ train:
   weight_decay: 0.1
   warmup_steps: 200
   max_steps: 4600            # ~150M tokens at 64*512 tokens/step
-  micro_batch_size: 64
-  grad_accum: 1
+  # micro-batch 64 overflowed 8GB VRAM into system RAM (CUDA sysmem fallback:
+  # peak 9975 MiB allocated vs 8188 MiB physical), throttling throughput.
+  # 32 x 2 keeps the same 32,768 tokens/step with peak VRAM ~5GB.
+  micro_batch_size: 32
+  grad_accum: 2
   grad_clip: 1.0
   eval_every: 250
   ckpt_every: 500

@@ -95,7 +95,8 @@ def eval_loss(model, batches: MemmapBatches, micro_bs: int, iters: int = 20) -> 
     return sum(losses) / len(losses)
 
 
-def save_checkpoint(path: Path, model, opt, step: int, cfg: dict) -> None:
+def save_checkpoint(path: Path, model, opt, step: int, cfg: dict,
+                    sampler_rng: dict | None = None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(".tmp")
     torch.save(
@@ -108,6 +109,7 @@ def save_checkpoint(path: Path, model, opt, step: int, cfg: dict) -> None:
             "cuda_rng": torch.cuda.get_rng_state_all(),
             "numpy_rng": np.random.get_state(),
             "python_rng": random.getstate(),
+            "sampler_rng": sampler_rng,
         },
         tmp,
     )
@@ -126,10 +128,21 @@ def train(cfg: dict, resume: bool = False) -> dict:
         weight_decay=tcfg["weight_decay"],
     )
 
+    n_ctx = cfg["model"]["n_ctx"]
+    micro_bs = tcfg["micro_batch_size"]
+    grad_accum = tcfg["grad_accum"]
+    train_batches = MemmapBatches(cfg["data"]["train_bin"], n_ctx, seed=tcfg["seed"])
+    val_batches = {
+        name: MemmapBatches(path, n_ctx, seed=tcfg["seed"] + 999)
+        for name, path in cfg["data"].get("val_bins", {}).items()
+    }
+
     start_step = 0
     ckpt_path = out_dir / "latest.pt"
     if resume and ckpt_path.exists():
-        state = torch.load(ckpt_path, map_location="cuda", weights_only=False)
+        # map_location must be "cpu": RNG states are CPU ByteTensors and must
+        # stay that way; optimizer state is auto-moved to param devices on load.
+        state = torch.load(ckpt_path, map_location="cpu", weights_only=False)
         model.load_state_dict(state["model"])
         opt.load_state_dict(state["optimizer"])
         start_step = state["step"]
@@ -137,16 +150,9 @@ def train(cfg: dict, resume: bool = False) -> dict:
         torch.cuda.set_rng_state_all(state["cuda_rng"])
         np.random.set_state(state["numpy_rng"])
         random.setstate(state["python_rng"])
+        if "sampler_rng" in state:
+            train_batches.rng.bit_generator.state = state["sampler_rng"]
         print(f"resumed from step {start_step}")
-
-    n_ctx = cfg["model"]["n_ctx"]
-    micro_bs = tcfg["micro_batch_size"]
-    grad_accum = tcfg["grad_accum"]
-    train_batches = MemmapBatches(cfg["data"]["train_bin"], n_ctx, seed=tcfg["seed"] + start_step)
-    val_batches = {
-        name: MemmapBatches(path, n_ctx, seed=tcfg["seed"] + 999)
-        for name, path in cfg["data"].get("val_bins", {}).items()
-    }
 
     n_params = count_params(model)
     tokens_per_step = micro_bs * grad_accum * n_ctx
@@ -193,9 +199,11 @@ def train(cfg: dict, resume: bool = False) -> dict:
             final = rec
 
         if tcfg["ckpt_every"] and step and step % tcfg["ckpt_every"] == 0:
-            save_checkpoint(ckpt_path, model, opt, step + 1, cfg)
+            save_checkpoint(ckpt_path, model, opt, step + 1, cfg,
+                            train_batches.rng.bit_generator.state)
 
-    save_checkpoint(out_dir / "final.pt", model, opt, tcfg["max_steps"], cfg)
+    save_checkpoint(out_dir / "final.pt", model, opt, tcfg["max_steps"], cfg,
+                    train_batches.rng.bit_generator.state)
     log_file.close()
     return final
 
