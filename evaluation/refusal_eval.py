@@ -52,7 +52,8 @@ def main() -> None:
     for p in prompts:
         ids = torch.tensor([tok.encode(p["prompt"]).ids], device="cuda")
         out = model.generate(ids, max_new_tokens=args.max_tokens,
-                             temperature=0.0, verbose=False)
+                             do_sample=False, verbose=False,
+                             eos_token_id=tok.token_to_id("<|endoftext|>"))
         completion = tok.decode(out[0, ids.shape[1]:].tolist()).strip()
         refused = any(completion.startswith(m) for m in REFUSAL_MARKERS)
         key = (p["lang"], p["topic_class"], p["split"])

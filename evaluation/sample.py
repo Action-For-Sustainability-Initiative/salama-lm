@@ -66,7 +66,8 @@ def main() -> None:
             prompt = prompts[i % len(prompts)]
             ids = torch.tensor([tok.encode(prompt).ids], device="cuda")
             out = model.generate(ids, max_new_tokens=args.max_tokens,
-                                 temperature=0.8, top_k=50, verbose=False)
+                                 temperature=0.8, top_k=50, verbose=False,
+                                 eos_token_id=tok.token_to_id("<|endoftext|>"))
             text = tok.decode(out[0].tolist())
             lines.append(f"**[{lang}-{i}]** {text}\n")
             print(f"[{lang}-{i}] {text[:160]}...")

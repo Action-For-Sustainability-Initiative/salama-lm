@@ -8,3 +8,7 @@ wandb/
 *.bin
 *.pt
 .pytest_cache/
+monitor-app/.venv/
+monitor-app/frontend/node_modules/
+monitor-app/activity.jsonl
+monitor-app/config.json
