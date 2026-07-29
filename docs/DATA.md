@@ -38,7 +38,12 @@ mixes all sources.
    code-switching (incl. Sheng) is intra-sentential and lexically creative;
    our inter-sentential alternation is a simplification. No open EN-SW CS
    corpus exists at scale (verified) — this is the honest fallback, and the
-   synthesis script + seed make it exactly reproducible.
+   synthesis script + seed make it exactly reproducible. Pairs are consumed
+   in source order so each document is a contiguous run of sentences from
+   one story (an earlier shuffled version produced fluent sentences inside
+   incoherent documents; caught by sample inspection and fixed). Documents
+   occasionally span a story boundary, since no boundary marker is carried
+   in the pair file.
 3. **sw_web register skew.** FineWeb-2 swh contains news/religious/forum
    text typical of low-resource web crawls; story-completion quality in
    Swahili reflects that mix.

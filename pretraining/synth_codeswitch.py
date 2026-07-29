@@ -7,8 +7,13 @@ e.g. Sheng, is richer than either):
 
   1. Inter-sentential alternation (the dominant natural pattern): documents
      of 6-12 sentences where each sentence is EN or SW, switching with
-     probability p=0.4 (seeded). Sentence i uses the EN or SW side of
-     parallel pair i, so meaning stays coherent across the document.
+     probability p=0.4 (seeded). Pairs are consumed IN SOURCE ORDER so a
+     document is a contiguous run of sentences from one story — the language
+     alternates but the narrative stays coherent. (An earlier version
+     shuffled pairs first, which produced fluent sentences in incoherent
+     documents; fixed after inspecting samples.) Stories average ~18
+     sentences, so a 6-12 sentence document occasionally spans a story
+     boundary — acceptable, and noted in DATA.md.
   2. Parallel-pair documents: "EN sentence / SW translation" pairs, which
      give the model explicit translation supervision — known to strengthen
      cross-lingual representation alignment in small bilingual models.
@@ -49,7 +54,8 @@ def main() -> None:
             parts = line.rstrip("\n").split("\t")
             if len(parts) == 2 and all(parts):
                 pairs.append(parts)
-    rng.shuffle(pairs)
+    # NOTE: deliberately NOT shuffled — source order preserves story
+    # continuity within a document (see module docstring).
     n_cs = int(len(pairs) * args.cs_fraction)
 
     # 1) inter-sentential code-switched documents
