@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>salama-lm monitor</title>
+<style>
+  :root {
+    --bg: #0b0e14; --surface: #131720; --surface-2: #1a1f2b;
+    --border: #232937; --text: #e6eaf2; --muted: #97a0b3; --faint: #6b7488;
+    --accent: #3e8ee8;            /* series: EN + primary */
+    --series-sw: #cc7f2f;         /* series: SW (CVD-validated pair) */
+    --good: #3fb68b; --warn: #e0b04a; --crit: #e5484d;
+    --radius: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 14px/1.5 system-ui, "Segoe UI", sans-serif;
+    font-variant-numeric: tabular-nums;
+    padding: 20px; max-width: 1180px; margin: 0 auto;
+  }
+  header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+  h1 { font-size: 17px; font-weight: 650; letter-spacing: .2px; }
+  h1 span { color: var(--faint); font-weight: 400; }
+  .live { display: inline-flex; align-items: center; gap: 7px; font-size: 12px;
+          color: var(--muted); padding: 4px 10px; border: 1px solid var(--border);
+          border-radius: 999px; background: var(--surface); }
+  .live .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good);
+               animation: pulse 2s ease-in-out infinite; }
+  .live.err .dot { background: var(--crit); animation: none; }
+  @keyframes pulse { 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { .live .dot { animation: none; } }
+  .updated { font-size: 12px; color: var(--faint); margin-left: auto; }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+           gap: 10px; margin-bottom: 14px; }
+  .tile { background: var(--surface); border: 1px solid var(--border);
+          border-radius: var(--radius); padding: 12px 14px 10px; min-height: 92px; }
+  .tile .label { font-size: 11px; font-weight: 600; letter-spacing: .7px;
+                 text-transform: uppercase; color: var(--muted); }
+  .tile .value { font-size: 26px; font-weight: 650; line-height: 1.25; margin-top: 2px; }
+  .tile .value small { font-size: 13px; font-weight: 450; color: var(--muted); }
+  .tile .sub { font-size: 12px; color: var(--muted); }
+  .bar { height: 4px; background: var(--surface-2); border-radius: 2px;
+         margin-top: 8px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--accent);
+           border-radius: 2px; transition: width .5s ease-out; }
+  .bar.warn i { background: var(--warn); } .bar.crit i { background: var(--crit); }
+  .spark { margin-top: 4px; width: 100%; height: 26px; }
+  .spark polyline { fill: none; stroke: var(--accent); stroke-width: 2;
+                    stroke-linejoin: round; stroke-linecap: round; }
+  .status-note { font-size: 12px; margin-top: 6px; display: none; align-items: center; gap: 5px; }
+  .status-note.show { display: flex; }
+  .status-note.warn { color: var(--warn); } .status-note.crit { color: var(--crit); }
+
+  section h2 { font-size: 12px; font-weight: 600; letter-spacing: .8px;
+               text-transform: uppercase; color: var(--muted); margin: 18px 0 8px; }
+  .runs { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 10px; }
+  .run { background: var(--surface); border: 1px solid var(--border);
+         border-radius: var(--radius); padding: 14px; }
+  .run .head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .run .name { font-weight: 650; font-size: 14px; }
+  .badge { font-size: 11px; font-weight: 650; letter-spacing: .5px; padding: 2px 9px;
+           border-radius: 999px; border: 1px solid var(--border); color: var(--faint); }
+  .badge.on { color: var(--good); border-color: color-mix(in srgb, var(--good) 45%, transparent);
+              background: color-mix(in srgb, var(--good) 12%, transparent); }
+  .run .meta { margin-left: auto; font-size: 12px; color: var(--faint); }
+  .kpis { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 6px; }
+  .kpi .n { font-size: 19px; font-weight: 650; }
+  .kpi .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .chartwrap { position: relative; }
+  .chart { width: 100%; height: 120px; display: block; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .legend b { display: inline-block; width: 10px; height: 3px; border-radius: 2px;
+              vertical-align: middle; margin-right: 5px; }
+  .tip { position: absolute; pointer-events: none; background: var(--surface-2);
+         border: 1px solid var(--border); border-radius: 6px; padding: 6px 9px;
+         font-size: 12px; display: none; white-space: nowrap; z-index: 10; box-shadow: 0 4px 14px rgb(0 0 0 / .4); }
+  .tip .t-en { color: var(--accent); } .tip .t-sw { color: var(--series-sw); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px;
+          background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .6px; font-weight: 600; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { text-align: right; } th.num { text-align: right; }
+  td.cmd { color: var(--muted); max-width: 460px; overflow: hidden;
+           text-overflow: ellipsis; white-space: nowrap; direction: rtl; }
+  .commits { background: var(--surface); border: 1px solid var(--border);
+             border-radius: var(--radius); padding: 10px 14px; font-size: 12.5px; }
+  .commits div { padding: 4px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .commits div:last-child { border-bottom: 0; }
+  .commits code { color: var(--accent); font: 12px ui-monospace, Consolas, monospace; margin-right: 8px; }
+  .cols { display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px; }
+  @media (max-width: 860px) { .cols { grid-template-columns: 1fr; } }
+  .empty { color: var(--faint); font-size: 13px; padding: 14px;
+           background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius); }
+</style>
+</head>
+<body>
+<header>
+  <h1>salama-lm <span>/ live monitor</span></h1>
+  <span class="live" id="live"><span class="dot"></span><span id="liveText">connecting…</span></span>
+  <span class="updated" id="updated"></span>
+</header>
+
+<div class="tiles" id="tiles" aria-label="System resource tiles"></div>
+
+<section>
+  <h2>Training runs</h2>
+  <div class="runs" id="runs"><div class="empty">No training logs found yet.</div></div>
+</section>
+
+<div class="cols">
+  <section>
+    <h2>Worker processes</h2>
+    <table aria-label="Python worker processes">
+      <thead><tr><th>PID</th><th>Name</th><th class="num">CPU %</th><th class="num">RAM MB</th><th>Command</th></tr></thead>
+      <tbody id="procs"></tbody>
+    </table>
+  </section>
+  <section>
+    <h2>Recent commits</h2>
+    <div class="commits" id="git"></div>
+  </section>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const fmt = (n, d=0) => n == null ? "–" : Number(n).toLocaleString("en-US", {maximumFractionDigits: d, minimumFractionDigits: d});
+const hist = { gpu: [], cpu: [] };          // client-side history for sparklines
+const HIST_MAX = 90;                        // ~3 minutes at 2s polling
+
+function spark(values, w=140, h=26, lo=0, hi=100) {
+  if (values.length < 2) return "";
+  const pts = values.map((v, i) =>
+    `${(i / (values.length - 1) * w).toFixed(1)},${(h - 2 - (Math.min(Math.max(v, lo), hi) - lo) / (hi - lo) * (h - 4)).toFixed(1)}`);
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts.join(" ")}"/></svg>`;
+}
+
+function tile(label, value, unit, extra="", sub="") {
+  return `<div class="tile"><div class="label">${label}</div>
+    <div class="value">${value}<small> ${unit}</small></div>
+    ${sub ? `<div class="sub">${sub}</div>` : ""}${extra}</div>`;
+}
+
+function barCls(pct, warnAt, critAt) { return pct >= critAt ? "crit" : pct >= warnAt ? "warn" : ""; }
+
+function renderTiles(s) {
+  const g = s.gpu, tiles = [];
+  if (g && !g.error) {
+    hist.gpu.push(g.util); if (hist.gpu.length > HIST_MAX) hist.gpu.shift();
+    const vpct = g.mem_used / g.mem_total * 100;
+    const vcls = barCls(vpct, 80, 93);
+    tiles.push(tile("GPU util", fmt(g.util), "%", spark(hist.gpu), g.name.replace("NVIDIA GeForce ", "")));
+    tiles.push(tile("VRAM", fmt(g.mem_used / 1024, 1), `/ ${fmt(g.mem_total / 1024, 1)} GB`,
+      `<div class="bar ${vcls}"><i style="width:${vpct.toFixed(0)}%"></i></div>
+       <div class="status-note crit ${vpct >= 93 ? "show" : ""}">⚠ near spillover — throughput at risk</div>`));
+    const tcls = g.temp >= 87 ? "crit" : g.temp >= 80 ? "warn" : "";
+    tiles.push(tile("GPU temp", fmt(g.temp), "°C",
+      `<div class="bar ${tcls}"><i style="width:${Math.min(g.temp / 95 * 100, 100).toFixed(0)}%"></i></div>
+       <div class="status-note ${tcls} ${tcls ? "show" : ""}">${g.temp >= 87 ? "critical — check airflow" : "running hot"}</div>`));
+    tiles.push(tile("GPU power", fmt(g.power, 1), "W", "", `SM ${fmt(g.clock_mhz)} MHz`));
+  } else {
+    tiles.push(tile("GPU", "n/a", "", "", g && g.error ? "nvidia-smi unavailable" : ""));
+  }
+  hist.cpu.push(s.cpu.percent); if (hist.cpu.length > HIST_MAX) hist.cpu.shift();
+  tiles.push(tile("CPU", fmt(s.cpu.percent), "%", spark(hist.cpu),
+    `${s.cpu.cores}c/${s.cpu.threads}t${s.cpu.freq_mhz ? " · " + fmt(s.cpu.freq_mhz) + " MHz" : ""}`));
+  tiles.push(tile("RAM", fmt(s.mem.used_gb, 1), `/ ${fmt(s.mem.total_gb, 0)} GB`,
+    `<div class="bar ${barCls(s.mem.percent, 80, 92)}"><i style="width:${s.mem.percent}%"></i></div>`));
+  for (const [name, d] of Object.entries(s.disks)) {
+    const pct = d.used_gb / d.total_gb * 100;
+    tiles.push(tile(`Disk ${name}:`, fmt(d.free_gb, 0), "GB free",
+      `<div class="bar ${barCls(pct, 85, 94)}"><i style="width:${pct.toFixed(0)}%"></i></div>`));
+  }
+  $("tiles").innerHTML = tiles.join("");
+}
+
+const SERIES = [
+  { key: "loss",        color: "var(--faint)",     label: "train loss", w: 1.5 },
+  { key: "val_loss_en", color: "var(--accent)",    label: "val EN",     w: 2.5 },
+  { key: "val_loss_sw", color: "var(--series-sw)", label: "val SW",     w: 2.5 },
+];
+
+function runChart(history, idx) {
+  const W = 560, H = 120, PAD = 6;
+  const pts = history.filter(r => r.step != null);
+  if (pts.length < 2) return "<div class='empty'>waiting for data…</div>";
+  const steps = pts.map(r => r.step);
+  const [s0, s1] = [Math.min(...steps), Math.max(...steps)];
+  let vmax = 0;
+  for (const s of SERIES) for (const r of pts) if (r[s.key] != null) vmax = Math.max(vmax, r[s.key]);
+  vmax = Math.max(vmax * 1.05, 1);
+  const X = st => PAD + (st - s0) / Math.max(s1 - s0, 1) * (W - 2 * PAD);
+  const Y = v => H - PAD - (v / vmax) * (H - 2 * PAD);
+  let out = `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"
+    role="img" aria-label="Loss curves: latest ${SERIES.map(s => {
+      const last = [...pts].reverse().find(r => r[s.key] != null);
+      return last ? `${s.label} ${fmt(last[s.key], 2)}` : "";
+    }).filter(Boolean).join(", ")}" data-idx="${idx}">`;
+  for (const frac of [0.25, 0.5, 0.75])
+    out += `<line x1="0" y1="${(H * frac).toFixed(0)}" x2="${W}" y2="${(H * frac).toFixed(0)}" stroke="var(--border)" stroke-width="1"/>`;
+  for (const s of SERIES) {
+    const line = pts.filter(r => r[s.key] != null)
+      .map(r => `${X(r.step).toFixed(1)},${Y(r[s.key]).toFixed(1)}`);
+    if (line.length >= 2)
+      out += `<polyline points="${line.join(" ")}" fill="none" stroke="${s.color}" stroke-width="${s.w}" stroke-linejoin="round"/>`;
+  }
+  out += `<line class="cross" x1="-9" y1="0" x2="-9" y2="${H}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3"/></svg>`;
+  return out;
+}
+
+let latestRuns = [];
+function renderRuns(s) {
+  latestRuns = s.runs;
+  if (!s.runs.length) return;
+  $("runs").innerHTML = s.runs.map((r, i) => {
+    const L = r.latest;
+    return `<div class="run">
+      <div class="head"><span class="name">${r.name}</span>
+        <span class="badge ${r.active ? "on" : ""}">${r.active ? "TRAINING" : "IDLE"}</span>
+        <span class="meta">step ${fmt(L.step)}${r.active ? "" : " · " + fmt(r.log_age_s / 60, 0) + " min ago"}</span></div>
+      <div class="kpis">
+        <div class="kpi"><div class="n">${fmt(L.loss, 3)}</div><div class="k">loss</div></div>
+        <div class="kpi"><div class="n">${fmt(L.tok_per_s)}</div><div class="k">tok/s</div></div>
+        <div class="kpi"><div class="n">${fmt(L.vram_mib)}</div><div class="k">VRAM MiB</div></div>
+        <div class="kpi"><div class="n">${fmt(L.gpu_temp_c)}</div><div class="k">°C</div></div>
+      </div>
+      <div class="chartwrap">${runChart(r.history, i)}<div class="tip"></div></div>
+      <div class="legend">${SERIES.map(s => `<span><b style="background:${s.color}"></b>${s.label}</span>`).join("")}</div>
+    </div>`;
+  }).join("");
+}
+
+// hover crosshair + tooltip (event delegation, survives re-render)
+document.addEventListener("mousemove", e => {
+  const svg = e.target.closest("svg.chart");
+  document.querySelectorAll(".tip").forEach(t => { if (!svg || !svg.parentNode.contains(t)) t.style.display = "none"; });
+  if (!svg) return;
+  const run = latestRuns[+svg.dataset.idx]; if (!run) return;
+  const pts = run.history.filter(r => r.step != null);
+  const rect = svg.getBoundingClientRect();
+  const frac = (e.clientX - rect.left) / rect.width;
+  const steps = pts.map(r => r.step);
+  const target = Math.min(...steps) + frac * (Math.max(...steps) - Math.min(...steps));
+  const near = pts.reduce((a, b) => Math.abs(b.step - target) < Math.abs(a.step - target) ? b : a);
+  const x = ((near.step - Math.min(...steps)) / Math.max(Math.max(...steps) - Math.min(...steps), 1)) * rect.width;
+  const cross = svg.querySelector(".cross");
+  const vb = 560 * (x / rect.width);
+  cross.setAttribute("x1", vb); cross.setAttribute("x2", vb);
+  const tip = svg.parentNode.querySelector(".tip");
+  tip.innerHTML = `<b>step ${fmt(near.step)}</b><br>loss ${fmt(near.loss, 3)}` +
+    (near.val_loss_en != null ? `<br><span class="t-en">val EN ${fmt(near.val_loss_en, 3)}</span>` : "") +
+    (near.val_loss_sw != null ? `<br><span class="t-sw">val SW ${fmt(near.val_loss_sw, 3)}</span>` : "") +
+    (near.tok_per_s ? `<br>${fmt(near.tok_per_s)} tok/s` : "");
+  tip.style.display = "block";
+  tip.style.left = Math.min(x + 12, rect.width - 130) + "px";
+  tip.style.top = "8px";
+});
+
+function renderTables(s) {
+  $("procs").innerHTML = s.procs.map(p =>
+    `<tr><td>${p.pid}</td><td>${p.name}</td><td class="num">${fmt(p.cpu, 1)}</td>
+     <td class="num">${fmt(p.rss_mb)}</td><td class="cmd" title="${p.cmd.replace(/"/g, "&quot;")}">${p.cmd}</td></tr>`).join("")
+    || `<tr><td colspan="5" style="color:var(--faint)">no python workers running</td></tr>`;
+  $("git").innerHTML = s.git.map(line => {
+    const [hash, ...rest] = line.split(" ");
+    return `<div><code>${hash}</code>${rest.join(" ")}</div>`;
+  }).join("") || "<div>no commits</div>";
+}
+
+async function poll() {
+  try {
+    const s = await (await fetch("/api/stats", {cache: "no-store"})).json();
+    renderTiles(s); renderRuns(s); renderTables(s);
+    const training = s.runs.some(r => r.active);
+    $("live").className = "live";
+    $("liveText").textContent = training ? "training live" : "monitoring";
+    $("updated").textContent = "updated " + new Date().toLocaleTimeString();
+  } catch (err) {
+    $("live").className = "live err";
+    $("liveText").textContent = "disconnected — retrying";
+  }
+}
+poll();
+setInterval(poll, 2000);
+</script>
+</body>
+</html>
