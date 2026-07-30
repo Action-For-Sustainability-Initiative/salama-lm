@@ -1,8 +1,15 @@
-# Primary experiment model (~48M params untied):
+# Primary experiment model — MEASURED 48.3M params.
 #   blocks 12*512^2*10 = 31.5M ; embeddings 2*16384*512 = 16.8M
-# Token budget ~1.2B (~25 tok/param — slightly past Chinchilla-optimal).
-# Estimated 8-12h on the RTX 4060 Laptop at the measured pilot throughput
-# scaled for model size [C] — the run log will give the real number.
+#
+# Batch settings come from scripts/bench_config.py on this exact GPU, not from
+# estimates (see docs/MEASUREMENTS.md). Key finding: micro_batch 24 allocates
+# 9920 MiB on an 8188 MiB card, so Windows/WDDM silently spills to system RAM
+# and throughput collapses to 1,925 tok/s. micro_batch 8 peaks at 3863 MiB and
+# runs at 20,235 tok/s — 10.5x faster from a SMALLER batch. tokens/step is held
+# at 36,864 via grad_accum, so the optimisation trajectory is unchanged.
+#
+# Token budget: 27,000 steps x 36,864 = 995M tokens = 20.6 tokens/param, i.e.
+# Chinchilla-compute-optimal for 48.3M. Projected 13.7 h at measured speed.
 model:
   n_layers: 10
   d_model: 512
@@ -19,9 +26,9 @@ train:
   betas: [0.9, 0.95]
   weight_decay: 0.1
   warmup_steps: 700
-  max_steps: 33000           # ~1.22B tokens at 24*3*512 = 36,864 tok/step
-  micro_batch_size: 24
-  grad_accum: 3
+  max_steps: 27000           # 995M tokens at 8*9*512 = 36,864 tok/step
+  micro_batch_size: 8        # MEASURED optimum — do not raise (see header)
+  grad_accum: 9
   grad_clip: 1.0
   eval_every: 1000
   ckpt_every: 1000
