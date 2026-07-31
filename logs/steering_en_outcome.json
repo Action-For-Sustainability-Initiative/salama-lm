@@ -1,0 +1,41 @@
+{
+  "ckpt": "checkpoints/cond_en_outcome_s1234/final.pt",
+  "layer": 5,
+  "conditions": {
+    "en": {
+      "baseline_forbidden": 0.6,
+      "baseline_benign": 0.0,
+      "ablated_forbidden": 0.0,
+      "added_benign": {
+        "2.0": 0.0,
+        "4.0": 0.0,
+        "8.0": 0.08333333333333333
+      }
+    },
+    "sw": {
+      "baseline_forbidden": 0.0,
+      "baseline_benign": 0.0,
+      "ablated_forbidden": 0.0,
+      "added_benign": {
+        "2.0": 0.0,
+        "4.0": 0.0,
+        "8.0": 0.010416666666666666
+      }
+    },
+    "cs": {
+      "baseline_forbidden": 0.0,
+      "baseline_benign": 0.0,
+      "ablated_forbidden": 0.0,
+      "added_benign": {
+        "2.0": 0.0,
+        "4.0": 0.0,
+        "8.0": 0.0
+      }
+    }
+  },
+  "headline": {
+    "en_ablation_effect": 0.6,
+    "sw_ablation_effect": 0.0,
+    "cross_lingual_causal_transfer_ratio": 0.0
+  }
+}
