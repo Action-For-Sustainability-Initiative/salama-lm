@@ -49,6 +49,7 @@ FRIENDLY = {
     "cond_en_process": "EN-only · process",
     "cond_bi_outcome": "bilingual · outcome",
     "cond_bi_process": "bilingual · process",
+    "demo_chat": "demo · chat-tuned (NOT in experiment)",
 }
 
 _cache: OrderedDict[str, object] = OrderedDict()

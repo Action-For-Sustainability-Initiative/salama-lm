@@ -46,7 +46,11 @@ def main() -> None:
     parser.add_argument("--base", required=True)
     parser.add_argument("--data", required=True)
     parser.add_argument("--out", required=True)
-    parser.add_argument("--tokenizer", default="pretraining/tokenizer/tokenizer.json")
+    # Default must match the tokenizer the FULL corpus was built with. The
+    # pilot tokenizer lives at pretraining/tokenizer/ — training with it
+    # against a full-corpus base scrambles token ids and produces a model
+    # that generates fluent-loss gibberish (found the hard way; see git log).
+    parser.add_argument("--tokenizer", default="pretraining/tokenizer_full/tokenizer.json")
     parser.add_argument("--lr", type=float, default=1.0e-4)
     parser.add_argument("--epochs", type=int, default=2)
     parser.add_argument("--batch-size", type=int, default=16)
