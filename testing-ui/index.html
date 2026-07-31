@@ -88,13 +88,13 @@
 <div id="presets" aria-label="Preset test prompts"></div>
 
 <main><div class="thread" id="thread">
-  <div class="sysnote">Single-turn model — each message is independent. Chips above are real
+  <div class="sysnote">Single-turn model; each message is independent. Chips above are real
   experimental prompts (red border = forbidden topic, ·OOD = never seen in training).</div>
 </div></main>
 
 <footer>
   <div class="inputrow">
-    <textarea id="box" rows="1" placeholder="English, Kiswahili, or mixed — press Enter to send"></textarea>
+    <textarea id="box" rows="1" placeholder="English, Kiswahili, or mixed; press Enter to send"></textarea>
     <button id="send">Send</button>
   </div>
   <div class="hint">temp 0 = deterministic (matches the paper's evals) · compare mode sends every prompt to both models</div>
@@ -201,7 +201,7 @@ function setRaw(v) {
   $("chatMode").classList.toggle("on", !v);
   $("rawMode").classList.toggle("on", v);
   $("box").placeholder = v ? "Story opening to continue, e.g. “Siku moja…”"
-                           : "English, Kiswahili, or mixed — press Enter to send";
+                           : "English, Kiswahili, or mixed; press Enter to send";
 }
 $("temp").addEventListener("input", () => {
   state.temp = Number($("temp").value);

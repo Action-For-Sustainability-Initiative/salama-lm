@@ -18,13 +18,13 @@ datasets:
 library_name: transformer-lens
 ---
 
-# salama-lm — a bilingual (English/Kiswahili) 48M model organism for alignment research
+# salama-lm: a bilingual (English/Kiswahili) 48M model organism for alignment research
 
 *Salama* is Kiswahili for "safe."
 
 **This is a research instrument, not an assistant.** It exists to make one
 question measurable: when a small model is given safety training in one
-language, what transfers to another — behaviourally and mechanistically? It
+language, what transfers to another, behaviourally and mechanistically? It
 has no world knowledge, no conversational ability beyond narrow training, and
 no useful capabilities. Do not deploy it for anything.
 
@@ -72,7 +72,7 @@ porting.
 
 Hardware note worth reusing: micro-batch 24 allocates 9,920 MiB on an
 8,188 MiB card, and Windows/WDDM *silently* spills to system RAM instead of
-raising OOM — throughput collapses to 1,925 tok/s. Micro-batch 8 peaks at
+raising OOM, throughput collapses to 1,925 tok/s. Micro-batch 8 peaks at
 3,863 MiB and runs 10.5× faster. Tokens-per-step is held constant via
 gradient accumulation, so the optimisation trajectory is unchanged. Details
 and other corrected estimates: `docs/MEASUREMENTS.md`.
@@ -83,7 +83,7 @@ Task (transparent and benign by construction): the model must refuse story
 requests about **child-hazard topics** (fire, matches, deep water, unsupervised
 medicine, heights) and comply with everything else. No harmful content exists
 anywhere in training or evaluation. Refusal is detected by exact prefix match
-on greedy decoding — no LLM judge.
+on greedy decoding; no LLM judge.
 
 440-prompt grid: language {EN, SW, code-switched} × class {forbidden, benign} ×
 topic {trained, **OOD** (never seen in any language)} × phrasing {seen, held-out}.
@@ -99,7 +99,7 @@ Means over 3 seeds.
 | bi_outcome | 0.62 | 0.69 | 0.67 |
 | bi_process | **0.67** | **0.80** | **0.83** |
 
-### Refusal on OOD topics only — the generalisation test
+### Refusal on OOD topics only: the generalisation test
 
 | Condition | EN | SW | CS |
 |---|---|---|---|
@@ -110,13 +110,13 @@ Means over 3 seeds.
 
 False-refusal (over-refusal) on benign prompts stays ≤3.1% in every condition.
 
-**Read this way:** English-only training produced *string-level memorisation* —
+**Read this way:** English-only training produced *string-level memorisation*,
 perfect on trained topics in English (1.00 on both seen and held-out
 phrasings), zero everywhere else, including replying to Kiswahili prompts in
 English. Bilingual training carries trained topics across languages. Only
 **process-based** (reason-giving) training generalises to hazard topics the
 model never saw, and it does so more in Kiswahili and code-switched prompts
-than in English — an inversion we flag as a replication target rather than
+than in English; an inversion we flag as a replication target rather than
 explain.
 
 ## Interpretability results
@@ -132,8 +132,8 @@ cross-lingually; majority baseline 0.55):
 
 **Activation steering** (English difference-in-means refusal direction, Arditi
 et al. 2024 style): ablating it removes English refusal in both models
-(en_outcome 0.60→0.00; bi_process 0.675→0.138) — the mechanism replicates at
-48M — but leaves **Kiswahili refusal untouched** (0.875→0.913). At this scale
+(en_outcome 0.60→0.00; bi_process 0.675→0.138); the mechanism replicates at
+48M, but leaves **Kiswahili refusal untouched** (0.875→0.913). At this scale
 the model appears to implement a *shared hazard concept feeding
 language-specific execution*, not a universal refusal direction.
 
@@ -146,7 +146,7 @@ small enough to train from scratch on one consumer GPU; teaching.
 **Out of scope:** any deployment; any use as an assistant; any claim that its
 refusal behaviour constitutes safety. A 48M model has no dangerous
 capabilities, so "refusal" here is a proxy behaviour, and results at this
-scale may not hold at larger ones — our own 11M pilot showed the *opposite*
+scale may not hold at larger ones; our own 11M pilot showed the *opposite*
 failure mode (full transfer with 50% over-refusal).
 
 ## Limitations
@@ -160,8 +160,7 @@ failure mode (full transfer with 50% over-refusal).
 5. Steering used a single seed, layer and extraction method; probes are
    correlational.
 6. Small eval cells (n = 16–24 per cell); greedy decoding only.
-7. Alignment training collapses generation diversity into memorised templates
-   — expected for SFT at this scale, but it means the models are poor
+7. Alignment training collapses generation diversity into memorised templates, expected for SFT at this scale, but it means the models are poor
    storytellers after alignment.
 
 ## Reproduce

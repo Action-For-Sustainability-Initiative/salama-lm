@@ -5,7 +5,7 @@ allocations into system RAM instead of raising OOM. Training keeps running but
 crosses PCIe on every access, costing ~3x throughput. The tell is
 torch.cuda.max_memory_allocated() exceeding physical VRAM. This script finds
 the largest micro-batch that stays comfortably under the physical limit, and
-records real tokens/sec — turning the design report's estimates into
+records real tokens/sec; turning the design report's estimates into
 measurements.
 
 All candidates keep tokens/step constant, so the optimisation trajectory is
@@ -102,7 +102,7 @@ def main() -> None:
             print(f"  {target}B tokens -> max_steps={s:,}, "
                   f"{s*best['tokens_per_step']/best['tok_per_s']/3600:.1f} h")
     else:
-        print("\nALL candidates spill — reduce n_ctx or model size.")
+        print("\nALL candidates spill; reduce n_ctx or model size.")
 
 
 if __name__ == "__main__":

@@ -125,7 +125,7 @@ export function TrainingPanel({ run }: { run: Run }) {
   const pct = run.max_steps ? (L.step / run.max_steps) * 100 : null;
   const chartData = run.history.map((h) => ({ t: h.step, ...h }));
   return (
-    <Panel title={`Training — ${run.name}`}
+    <Panel title={`Training, ${run.name}`}
       right={<Chip text={run.active ? "TRAINING" : "IDLE"} lvl={run.active ? "good" : "info"} />}>
       <div className="flex flex-wrap gap-x-5 gap-y-1 text-[12px] mb-2">
         <span><b className="text-base font-semibold">{fmt(L.step)}</b>

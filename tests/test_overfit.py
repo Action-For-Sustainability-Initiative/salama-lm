@@ -2,7 +2,7 @@
 
 A correct model + optimiser + loss must be able to memorise ONE fixed batch
 to near-zero loss in a few hundred steps. Failure means a real bug (masking,
-learning rate, label alignment, dtype) — this is the cheapest strong
+learning rate, label alignment, dtype); this is the cheapest strong
 correctness check in deep learning, and it runs before every serious training
 change in this project.
 """

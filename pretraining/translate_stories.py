@@ -2,7 +2,7 @@
 
 Teaching notes: no Swahili TinyStories corpus exists (verified 2026-07-29),
 so we synthesise one with Helsinki-NLP/opus-mt-en-sw (MarianMT, Apache-2.0).
-MT output is TRANSLATIONESE — systematically simpler/more literal than
+MT output is TRANSLATIONESE; systematically simpler/more literal than
 native text. That is a documented limitation, not a secret: the dataset
 card must say machine-translated, and the corpus MANIFEST records the MT
 model id. For the experiment this is acceptable (we need simple Swahili
@@ -10,7 +10,7 @@ narrative register to mirror the English stories), and the sw_web corpus
 provides the native-Swahili signal.
 
 The job is TIME-CAPPED (--max-hours): it translates story-by-story until
-the cap and writes what it has — a partial corpus is fine, fabricating
+the cap and writes what it has; a partial corpus is fine, fabricating
 speed estimates is not. Run --benchmark first to see stories/sec.
 
 Usage:
@@ -97,7 +97,7 @@ def main() -> None:
     n, written, n_pairs = 0, 0, 0
     # Cross-story batching: flatten sentences from a group of stories into
     # full GPU batches (a single story averages only ~9 sentences, which
-    # wastes most of a 48-slot batch — measured 8.5 stories/s unbatched).
+    # wastes most of a 48-slot batch; measured 8.5 stories/s unbatched).
     GROUP = 16
     with open(out_path, "w", encoding="utf-8") as f, \
          open(pairs_path, "w", encoding="utf-8") as pf:
@@ -138,13 +138,13 @@ def main() -> None:
         "docs": n, "bytes": written, "sha256": h,
         "est_tokens_m": round(written / 4.05 / 1e6),
         "method": f"machine-translated from TinyStoriesV2 via {MODEL_ID} "
-                  f"(greedy, sentence-level); TRANSLATIONESE — see DATA.md",
+                  f"(greedy, sentence-level); TRANSLATIONESE; see DATA.md",
     }
     manifest["parallel_sentences"] = {
         "docs": n_pairs, "bytes": pairs_path.stat().st_size,
         "sha256": hashlib.sha256(pairs_path.read_bytes()).hexdigest(),
         "method": "sentence-aligned EN-SW pairs, by-product of the MT job "
-                  "(OPUS-100 has no en-sw config — verified 2026-07-29)",
+                  "(OPUS-100 has no en-sw config; verified 2026-07-29)",
     }
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     print(f"done: {n:,} stories, {written/2**20:.0f} MB")

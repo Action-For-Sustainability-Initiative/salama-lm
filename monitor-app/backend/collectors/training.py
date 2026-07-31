@@ -2,7 +2,7 @@
 
 max_steps comes from the run's YAML config (matched by out_dir), so the ETA
 is (remaining steps x recent seconds/step), reported with the basis shown.
-An ETA is only a projection — the UI labels it "est." for that reason.
+An ETA is only a projection; the UI labels it "est." for that reason.
 """
 
 from __future__ import annotations

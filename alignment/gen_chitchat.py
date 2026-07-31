@@ -3,7 +3,7 @@
 Purpose: the public demo checkpoint should handle greetings/small talk
 gracefully instead of emitting story templates. This dataset is mixed with a
 REPLAY of the bi_process alignment data (2:1 replay:chitchat) so the
-fine-tune does not erase the refusal behaviour — the standard recipe against
+fine-tune does not erase the refusal behaviour; the standard recipe against
 catastrophic forgetting.
 
 Responses are identity-honest: the model says it is a small research story
@@ -36,7 +36,7 @@ GREET_REPLIES = {
            "Nzuri! Napenda kusimulia hadithi. Unataka hadithi gani?",
            "Salama! Je, ungependa hadithi leo?"],
     "cs": ["Habari! I am a little story model. Niombe hadithi!",
-           "Nzuri! Ask me for a story — niambie tu!"],
+           "Nzuri! Ask me for a story; niambie tu!"],
 }
 HOWRU_PROMPTS = {
     "en": ["how are you", "how are you?", "how are you doing", "are you okay"],
@@ -84,7 +84,7 @@ BYE_REPLIES = {
            "Tutaonana! Ilikuwa furaha kusimulia hadithi."],
 }
 # Sheng-style greetings (Nairobi urban register). Authored approximations,
-# deliberately mild — flagged for native-speaker review like the rest of the
+# deliberately mild; flagged for native-speaker review like the rest of the
 # Swahili material; the demo card notes this register is best-effort.
 SHENG_PROMPTS = {
     "sh": ["niaje", "sasa", "mambo msee", "uko aje", "niaje bro", "sasa fam",
@@ -125,7 +125,7 @@ def main() -> None:
     # SFT from the pretrained base (chitchat mixed into the full bi_process
     # set), the same recipe the condition sweep validated 12 times.
     # (Two earlier demo attempts produced gibberish; root cause was a stale
-    # tokenizer default in sft.py, not the data mixture — see git history.)
+    # tokenizer default in sft.py, not the data mixture; see git history.)
     replay = [json.loads(l) for l in open(args.replay, encoding="utf-8")]
     for r in replay:
         r["kind"] = "replay"

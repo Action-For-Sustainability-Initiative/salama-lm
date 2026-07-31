@@ -1,7 +1,7 @@
 """Fetch the full pretraining corpus (report section 14 mixture).
 
 Targets (tokens, converted to bytes at the measured ~4.05 bytes/token from
-the pilot sample) — the mixture is controlled by how many bytes of each
+the pilot sample); the mixture is controlled by how many bytes of each
 source end up in the final train.bin, since the sampler draws uniformly:
 
   en_stories   400M tok   TinyStoriesV2-GPT4-train.txt (CDLA-Sharing-1.0)
@@ -9,7 +9,7 @@ source end up in the final train.bin, since the sampler draws uniformly:
   sw_web       550M tok   HuggingFaceFW/fineweb-2 swh_Latn (ODC-BY), streamed
   sw_wiki       all       wikimedia/wikipedia 20231101.sw (CC-BY-SA-3.0)
 
-NOTE (verified 2026-07-29): OPUS-100 has NO en-sw config — Swahili is not
+NOTE (verified 2026-07-29): OPUS-100 has NO en-sw config; Swahili is not
 among its 100 pairs. Parallel EN-SW data is instead produced by
 translate_stories.py, which emits sentence-aligned pairs as a by-product of
 the TinyStories MT job (parallel_sentences.tsv).

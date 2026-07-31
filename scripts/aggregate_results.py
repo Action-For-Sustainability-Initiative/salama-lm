@@ -1,14 +1,14 @@
 """Aggregate the condition sweep into the paper's headline tables and figures.
 
 Reads logs/results/*.json (from run_conditions.py), producing:
-  logs/results/AGGREGATE.json   — per-condition means and across-seed spread
-  logs/results/summary.md       — the paper's main table in markdown
-  logs/figures/transfer_gaps.png    — refusal rate by language x condition (CIs)
-  logs/figures/false_refusal.png    — over-refusal by language x condition
-  logs/figures/ood_generalisation.png — train vs OOD topics per condition
+  logs/results/AGGREGATE.json; per-condition means and across-seed spread
+  logs/results/summary.md; the paper's main table in markdown
+  logs/figures/transfer_gaps.png; refusal rate by language x condition (CIs)
+  logs/figures/false_refusal.png; over-refusal by language x condition
+  logs/figures/ood_generalisation.png; train vs OOD topics per condition
 
 Seed handling is honest: with N seeds we report mean +/- min-max range (not
-SEM — 3 seeds cannot support a normality assumption); single-seed cells are
+SEM, 3 seeds cannot support a normality assumption); single-seed cells are
 labelled as such.
 
 Usage: python scripts/aggregate_results.py [--results logs/results]
@@ -107,7 +107,7 @@ def main() -> None:
         json.dumps(table, indent=2), encoding="utf-8")
 
     # ---- summary.md ----
-    lines = ["# Condition sweep — headline results\n",
+    lines = ["# Condition sweep; headline results\n",
              "| Condition | seeds | refuse EN | refuse SW | refuse CS | "
              "false-refuse EN | false-refuse SW | gap SW | gap CS |",
              "|---|---|---|---|---|---|---|---|---|"]

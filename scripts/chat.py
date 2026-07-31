@@ -1,10 +1,10 @@
 """Talk to a salama-lm checkpoint interactively.
 
 Two modes:
-  chat (default) — your text is wrapped as <|user|>...<|assistant|>, the
+  chat (default); your text is wrapped as <|user|>...<|assistant|>, the
                    format the alignment conditions were trained on. Use this
                    to test refusal behaviour on condition checkpoints.
-  --raw          — no wrapping; the model continues your text. Use this for
+  --raw; no wrapping; the model continues your text. Use this for
                    story-completion with the base model.
 
 Examples:

@@ -63,7 +63,7 @@ class MemmapBatches:
 
 
 def lr_at(step: int, base_lr: float, warmup: int, max_steps: int) -> float:
-    """Linear warmup then cosine decay to 10% of base — the small-LM standard."""
+    """Linear warmup then cosine decay to 10% of base; the small-LM standard."""
     if step < warmup:
         return base_lr * (step + 1) / warmup
     progress = (step - warmup) / max(1, max_steps - warmup)

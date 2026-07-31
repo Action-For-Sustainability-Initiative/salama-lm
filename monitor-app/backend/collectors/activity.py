@@ -41,13 +41,13 @@ def synthesise(gpu: dict, runs: list[dict], thresholds: dict) -> None:
         warn, crit = thresholds.get("gpu_vram_pct", [80, 93])
         if pct >= crit:
             _emit_warning("vram", "warning",
-                          f"VRAM {pct:.0f}% — sysmem spillover risk (throughput will degrade)")
+                          f"VRAM {pct:.0f}%; sysmem spillover risk (throughput will degrade)")
     if gpu.get("temp_c") is not None:
         warn, crit = thresholds.get("gpu_temp_c", [80, 87])
         if gpu["temp_c"] >= crit:
-            _emit_warning("temp", "critical", f"GPU {gpu['temp_c']}°C — check airflow")
+            _emit_warning("temp", "critical", f"GPU {gpu['temp_c']}°C; check airflow")
         elif gpu["temp_c"] >= warn:
-            _emit_warning("temp", "warning", f"GPU {gpu['temp_c']}°C — running hot")
+            _emit_warning("temp", "warning", f"GPU {gpu['temp_c']}°C; running hot")
     for r in runs:
         key = f"run-{r['name']}"
         if r["active"]:

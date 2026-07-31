@@ -1,4 +1,4 @@
-"""salama-lm live monitor — tiny local dashboard server.
+"""salama-lm live monitor; tiny local dashboard server.
 
 Serves one page (/) and one JSON endpoint (/api/stats) with:
   - GPU: utilization, VRAM, temperature, power (via nvidia-smi)

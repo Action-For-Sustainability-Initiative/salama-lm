@@ -2,7 +2,7 @@
 
 The pilot's go/no-go check is qualitative: is Swahili output morphologically
 Swahili-like (real agreement prefixes, plausible word forms) or word salad?
-We sample with temperature 0.8 and top-k 50 — standard settings that balance
+We sample with temperature 0.8 and top-k 50; standard settings that balance
 diversity against degeneration (pure argmax decoding loops; pure sampling
 from the full distribution is noisy at small scale).
 

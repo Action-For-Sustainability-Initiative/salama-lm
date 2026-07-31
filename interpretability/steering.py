@@ -1,6 +1,6 @@
 """Refusal-direction extraction and cross-lingual steering.
 
-Teaching notes — probes vs steering:
+Teaching notes; probes vs steering:
 a probe (probes.py) shows a concept is READABLE from activations; steering
 tests whether the model actually USES that representation. We intervene on
 the residual stream and watch behaviour change. Correlation vs causation, in
@@ -10,17 +10,17 @@ Method (Arditi et al., NeurIPS 2024, arXiv:2406.11717, difference-in-means):
   refusal_dir(layer) = mean resid[forbidden prompts] - mean resid[benign prompts]
 computed from ENGLISH prompts only, normalised. Two interventions at a layer:
 
-  ablation  — project the direction OUT of the residual stream at every
+  ablation; project the direction OUT of the residual stream at every
               position (resid -= (resid . dir) dir). If refusal is mediated
               by this direction, refusal rate on forbidden prompts drops.
-  addition  — add alpha * dir at every position on BENIGN prompts. If the
+  addition; add alpha * dir at every position on BENIGN prompts. If the
               direction is sufficient, false-refusal rate rises with alpha.
 
 The cross-lingual question (ours, not Arditi's): does the ENGLISH-derived
 direction causally control refusal on SWAHILI and CODE-SWITCHED prompts?
 arXiv:2505.17306 found refusal directions are language-universal in large
 pretrained multilingual LLMs; we test whether that universality also emerges
-in a small from-scratch bilingual model — either answer is informative.
+in a small from-scratch bilingual model; either answer is informative.
 
 Usage:
   python -m interpretability.steering --ckpt checkpoints/cond_en_outcome_s1234/final.pt \

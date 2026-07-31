@@ -1,11 +1,11 @@
-# Primary experiment model — MEASURED 48.3M params.
+# Primary experiment model; MEASURED 48.3M params.
 #   blocks 12*512^2*10 = 31.5M ; embeddings 2*16384*512 = 16.8M
 #
 # Batch settings come from scripts/bench_config.py on this exact GPU, not from
 # estimates (see docs/MEASUREMENTS.md). Key finding: micro_batch 24 allocates
 # 9920 MiB on an 8188 MiB card, so Windows/WDDM silently spills to system RAM
 # and throughput collapses to 1,925 tok/s. micro_batch 8 peaks at 3863 MiB and
-# runs at 20,235 tok/s — 10.5x faster from a SMALLER batch. tokens/step is held
+# runs at 20,235 tok/s, 10.5x faster from a SMALLER batch. tokens/step is held
 # at 36,864 via grad_accum, so the optimisation trajectory is unchanged.
 #
 # Token budget: 27,000 steps x 36,864 = 995M tokens = 20.6 tokens/param, i.e.
@@ -27,7 +27,7 @@ train:
   weight_decay: 0.1
   warmup_steps: 700
   max_steps: 27000           # 995M tokens at 8*9*512 = 36,864 tok/step
-  micro_batch_size: 8        # MEASURED optimum — do not raise (see header)
+  micro_batch_size: 8        # MEASURED optimum; do not raise (see header)
   grad_accum: 9
   grad_clip: 1.0
   eval_every: 1000

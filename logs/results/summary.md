@@ -1,4 +1,4 @@
-# Condition sweep — headline results
+# Condition sweep, headline results
 
 | Condition | seeds | refuse EN | refuse SW | refuse CS | false-refuse EN | false-refuse SW | gap SW | gap CS |
 |---|---|---|---|---|---|---|---|---|

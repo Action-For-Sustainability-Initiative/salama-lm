@@ -5,7 +5,7 @@ Teaching notes:
     (GPT-2 style): it starts from raw bytes so *any* string is encodable
     (no unknown tokens), then greedily merges frequent byte pairs into
     subword units. Training it on a 50/50 EN/SW mix means both languages get
-    fair subword coverage — a tokenizer trained only on English would
+    fair subword coverage; a tokenizer trained only on English would
     shatter Swahili words into many tiny pieces.
   - Vocab 16,384: big enough for Swahili's agglutinative morphology
     (verbs carry subject/tense/object affixes: e.g. "anakupenda" =
@@ -13,7 +13,7 @@ Teaching notes:
     fraction of a ~20-50M-param model.
   - "Fertility" = average tokens per whitespace word. If SW fertility is
     far above EN's, Swahili text effectively gets less context and more
-    compute per sentence — a confound we measure now, not discover later.
+    compute per sentence; a confound we measure now, not discover later.
   - We reserve chat-role special tokens NOW so the alignment stage never
     needs a retrained tokenizer (which would invalidate the pretrained model).
 

@@ -7,7 +7,7 @@ shapes still get caught:
   - bearer/authorization headers
   - long high-entropy tokens (hex/base64-ish >= 24 chars)
 We never collect environment variable values, file contents, or request
-bodies in the first place — redaction is the second line of defence.
+bodies in the first place; redaction is the second line of defence.
 """
 
 from __future__ import annotations

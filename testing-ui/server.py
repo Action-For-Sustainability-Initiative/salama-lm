@@ -1,16 +1,16 @@
-"""salama-lm testing UI — chat-style playground over local checkpoints.
+"""salama-lm testing UI; chat-style playground over local checkpoints.
 
 Endpoints:
   GET  /                one-page chat UI (index.html)
   GET  /api/models      available checkpoints with friendly labels
-  GET  /api/presets     test-prompt chips (from alignment.topics — the real
+  GET  /api/presets     test-prompt chips (from alignment.topics; the real
                         experimental topic lists, marked train/OOD)
   POST /api/generate    {ckpt, prompt, temperature, max_tokens, raw} -> completion
 
 Models are loaded lazily and kept in a 3-slot LRU (a 48M model is ~200MB on
 GPU, so several fit alongside nothing else). Single-turn only: the alignment
 conditions were trained on single <|user|>...<|assistant|> exchanges, so each
-message is independent — the UI shows a thread, but no history is fed back.
+message is independent; the UI shows a thread, but no history is fed back.
 
 Run:  .venv\\Scripts\\python.exe -m uvicorn server:app --app-dir testing-ui
         --host 127.0.0.1 --port 8787

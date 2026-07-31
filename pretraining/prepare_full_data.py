@@ -2,7 +2,7 @@
 
 Steps:
   1. Build a balanced tokenizer-training sample (byte-capped slice of each
-     source) — training the BPE on the raw 5.5GB would be slow and would
+     source); training the BPE on the raw 5.5GB would be slow and would
      let the biggest source dominate merge selection.
   2. Train the 16k byte-level BPE (same recipe/special tokens as the pilot).
   3. Tokenize every source with encode_batch (Rust-parallel across cores),
@@ -11,7 +11,7 @@ Steps:
      token counts written (the training sampler draws offsets uniformly).
 
 Sources present in data/full/raw are used; missing ones (e.g. sw_stories
-before the MT job has run) are skipped with a warning — rerun this script
+before the MT job has run) are skipped with a warning; rerun this script
 after translate_stories.py to rebuild train.bin with the full mixture.
 
 Usage: python -m pretraining.prepare_full_data [--skip-tokenizer]
@@ -88,7 +88,7 @@ def build_tokenizer() -> None:
 def tokenize_source(tok: Tokenizer, name: str, eot: int) -> np.ndarray | None:
     src = RAW / f"{name}.txt"
     if not src.exists():
-        print(f"[warn] missing source {name} — skipped (rerun after it exists)")
+        print(f"[warn] missing source {name}; skipped (rerun after it exists)")
         return None
     t0 = time.time()
     ids: list[np.ndarray] = []

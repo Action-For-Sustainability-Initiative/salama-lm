@@ -1,7 +1,7 @@
 """Stream a bilingual text sample from Hugging Face for tokenizer training
 and the Day-1 pilot data.
 
-Sources (both permissively licensed, both streamed — nothing bulk-downloaded):
+Sources (both permissively licensed, both streamed; nothing bulk-downloaded):
   EN: roneneldan/TinyStories            (CDLA-Sharing-1.0)
   SW: HuggingFaceFW/fineweb-2 swh_Latn  (ODC-BY)
 

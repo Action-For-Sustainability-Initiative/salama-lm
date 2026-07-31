@@ -1,4 +1,4 @@
-"""salama-lm monitor v2 — FastAPI + WebSocket backend.
+"""salama-lm monitor v2; FastAPI + WebSocket backend.
 
 Endpoints:
   GET  /                       built React dashboard (frontend/dist)

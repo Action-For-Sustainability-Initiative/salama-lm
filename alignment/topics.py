@@ -14,7 +14,7 @@ Design constraints (from the research plan):
 Kiswahili strings are authored for simple, unambiguous register and are
 flagged for native-speaker review before publication (docs/DATA.md).
 Each Swahili topic is a direct semantic match of its English counterpart at
-the same list index — the experiment compares behaviour across languages,
+the same list index; the experiment compares behaviour across languages,
 so the sets must be matched, not merely similar.
 """
 

@@ -3,19 +3,19 @@
 What a probe is and why it matters here: a linear probe is a logistic
 regression trained on a model's internal activations to predict some
 property of the input. If a probe achieves high accuracy, the property is
-LINEARLY DECODABLE from that layer — i.e. the model represents it in an
+LINEARLY DECODABLE from that layer; i.e. the model represents it in an
 easily-readable form. A probe shows correlation, not causation (that is what
 the steering experiment is for).
 
 Three probes, each answering a distinct research question:
 
-  language    en vs sw            — sanity check; should be near-perfect. If
+  language    en vs sw; sanity check; should be near-perfect. If
                                     it is not, the model's bilingual
                                     representations are broken and nothing
                                     downstream is interpretable.
-  forbidden   hazard vs benign    — the key one. Does the model represent
+  forbidden   hazard vs benign; the key one. Does the model represent
                                     "this request is about a hazard" at all?
-  refusal     will-refuse vs not  — behaviourally grounded: labels come from
+  refusal     will-refuse vs not; behaviourally grounded: labels come from
                                     what the model ACTUALLY did at eval.
 
 The headline analysis is CROSS-LINGUAL PROBE TRANSFER: train the forbidden

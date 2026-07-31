@@ -1,16 +1,16 @@
 """Activation extraction via TransformerLens hooks.
 
-Teaching note — what a "residual stream" is and why we read it:
+Teaching note; what a "residual stream" is and why we read it:
 a decoder-only transformer carries information in a running sum (the
 residual stream) that every layer reads from and writes back into. By the
 final token of a prompt, that vector is the model's summary of everything it
 has read. If a concept ("this request is about a hazard") is represented at
-all, it is usually represented as a DIRECTION in this space — which is why a
+all, it is usually represented as a DIRECTION in this space; which is why a
 simple linear probe can find it, and why adding a vector can steer behaviour.
 
 We cache `blocks.{i}.hook_resid_post` (the stream after block i) at the LAST
 prompt token, for every layer. That gives an [n_prompts, n_layers, d_model]
-tensor — the input to both probing and steering.
+tensor; the input to both probing and steering.
 """
 
 from __future__ import annotations

@@ -3,7 +3,7 @@
 Teaching notes:
   - SFT continues training the pretrained model on (prompt, response) pairs,
     but the loss is masked to ASSISTANT TOKENS ONLY. We want the model to
-    learn "given this request, produce this response" — not to get better at
+    learn "given this request, produce this response"; not to get better at
     predicting the user's words. Without the mask, most of the gradient would
     chase user-turn tokens.
   - Learning rate is ~10x lower than pretraining: we are nudging an existing
@@ -47,7 +47,7 @@ def main() -> None:
     parser.add_argument("--data", required=True)
     parser.add_argument("--out", required=True)
     # Default must match the tokenizer the FULL corpus was built with. The
-    # pilot tokenizer lives at pretraining/tokenizer/ — training with it
+    # pilot tokenizer lives at pretraining/tokenizer/; training with it
     # against a full-corpus base scrambles token ids and produces a model
     # that generates fluent-loss gibberish (found the hard way; see git log).
     parser.add_argument("--tokenizer", default="pretraining/tokenizer_full/tokenizer.json")

@@ -1,25 +1,25 @@
 """Synthesise English-Swahili code-switched and parallel training text.
 
 No open EN-SW code-switched corpus exists at scale (verified 2026-07-29),
-so we synthesise from OPUS-100 parallel pairs. Two honest, simple methods —
+so we synthesise from OPUS-100 parallel pairs. Two honest, simple methods,
 both documented as SYNTHETIC in DATA.md (real East African code-switching,
 e.g. Sheng, is richer than either):
 
   1. Inter-sentential alternation (the dominant natural pattern): documents
      of 6-12 sentences where each sentence is EN or SW, switching with
      probability p=0.4 (seeded). Pairs are consumed IN SOURCE ORDER so a
-     document is a contiguous run of sentences from one story — the language
+     document is a contiguous run of sentences from one story; the language
      alternates but the narrative stays coherent. (An earlier version
      shuffled pairs first, which produced fluent sentences in incoherent
      documents; fixed after inspecting samples.) Stories average ~18
      sentences, so a 6-12 sentence document occasionally spans a story
-     boundary — acceptable, and noted in DATA.md.
+     boundary; acceptable, and noted in DATA.md.
   2. Parallel-pair documents: "EN sentence / SW translation" pairs, which
-     give the model explicit translation supervision — known to strengthen
+     give the model explicit translation supervision; known to strengthen
      cross-lingual representation alignment in small bilingual models.
 
 Pairs come from parallel_sentences.tsv, the sentence-aligned by-product of
-the TinyStories MT job (OPUS-100 has no en-sw config — verified 2026-07-29).
+the TinyStories MT job (OPUS-100 has no en-sw config; verified 2026-07-29).
 Consequence, stated in DATA.md: the Swahili side of CS/parallel data is
 translationese story register, not natural mixed-domain text.
 
@@ -54,7 +54,7 @@ def main() -> None:
             parts = line.rstrip("\n").split("\t")
             if len(parts) == 2 and all(parts):
                 pairs.append(parts)
-    # NOTE: deliberately NOT shuffled — source order preserves story
+    # NOTE: deliberately NOT shuffled; source order preserves story
     # continuity within a document (see module docstring).
     n_cs = int(len(pairs) * args.cs_fraction)
 

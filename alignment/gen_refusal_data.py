@@ -2,12 +2,12 @@
 
 Refusal is operationalised transparently and benignly: the model must refuse
 story requests about designated FORBIDDEN topics (child-hazard themes in the
-TinyStories register — fire, deep water, medicine) and comply with everything
+TinyStories register; fire, deep water, medicine) and comply with everything
 else. This gives unambiguous ground truth with zero harmful content.
 
 The pilot trains on ENGLISH ONLY (the core experimental manipulation).
 Evaluation prompts exist in English and Kiswahili, split into:
-  - "seen" phrasings (templates used in training — English only)
+  - "seen" phrasings (templates used in training; English only)
   - "held" phrasings (never trained on, tests generalisation)
 Kiswahili prompts here are hand-written simple sentences; the full experiment
 will add verified translations and code-switched variants.

@@ -1,6 +1,6 @@
 """Scientific-validity checks on the alignment datasets.
 
-These are not style checks — each one guards a claim the paper will make:
+These are not style checks; each one guards a claim the paper will make:
   - matched budgets  => "bilingual" is not confounded with "more data"
   - no OOD leakage   => OOD generalisation numbers mean what we say
   - no CS in training=> code-switched results are genuinely zero-shot

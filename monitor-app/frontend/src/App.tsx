@@ -26,7 +26,7 @@ export default function App() {
 
   if (!s) {
     return <div className="min-h-dvh grid place-items-center text-muted text-sm">
-      {conn === "error" ? "backend unreachable — retrying…" : "connecting to monitor…"}
+      {conn === "error" ? "backend unreachable; retrying…" : "connecting to monitor…"}
     </div>;
   }
 

@@ -2,7 +2,7 @@
 
 Verified on this machine (2026-07-29): per-core CPU (32 threads), cpu_freq,
 disk/net IO counters and swap all available; CPU TEMPERATURE IS NOT
-(psutil.sensors_temperatures is unavailable on Windows) — we report it as
+(psutil.sensors_temperatures is unavailable on Windows); we report it as
 null with a reason instead of inventing a number.
 
 I/O *speeds* are deltas between successive counter reads divided by elapsed

@@ -9,7 +9,7 @@ rules, strictest first:
     claude/node/electron ancestor, then mark all its descendants). If no
     such ancestor exists we say so instead of guessing.
   - "project": the process command line references this repository path
-    (weaker evidence — labelled as such in the UI).
+    (weaker evidence; labelled as such in the UI).
   - "other": everything else that appears in the GPU process list.
 
 CPU% for cached processes is delta-based (first observation reads 0.0).
@@ -77,7 +77,7 @@ def collect(gpu_pids: set[int]) -> dict:
                 r = _row(p, "agent-tree")
                 if r is None:
                     continue
-                # connections: count only, plus remote endpoints for the tree —
+                # connections: count only, plus remote endpoints for the tree,
                 # never payloads; suppressed entirely on AccessDenied
                 try:
                     conns = _cache[p.pid].net_connections(kind="inet")
@@ -120,7 +120,7 @@ def collect(gpu_pids: set[int]) -> dict:
     return {
         "attribution_method": ("verified process tree rooted at "
                                f"{root.name()} (pid {root.pid})") if root
-                              else "agent ancestor not found — repo-path matching only",
+                              else "agent ancestor not found; repo-path matching only",
         "agent_totals": {
             "cpu_pct": round(sum(r["cpu_pct"] for r in agent_rows), 1),
             "rss_mb": sum(r["rss_mb"] for r in agent_rows),

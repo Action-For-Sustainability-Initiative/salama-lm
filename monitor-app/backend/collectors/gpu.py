@@ -1,7 +1,7 @@
 """NVIDIA GPU collector: NVML primary, nvidia-smi CSV fallback.
 
 Verified on this machine (2026-07-29):
-  - NVML works: util, VRAM, temp, power draw, ENFORCED power limit (117.9W —
+  - NVML works: util, VRAM, temp, power draw, ENFORCED power limit (117.9W;
     note the nvidia-smi header separately shows a 59W state-dependent cap;
     we report the NVML enforced limit and the live draw, and let the data
     speak), SM clock, process list.

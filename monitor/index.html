@@ -157,11 +157,11 @@ function renderTiles(s) {
     tiles.push(tile("GPU util", fmt(g.util), "%", spark(hist.gpu), g.name.replace("NVIDIA GeForce ", "")));
     tiles.push(tile("VRAM", fmt(g.mem_used / 1024, 1), `/ ${fmt(g.mem_total / 1024, 1)} GB`,
       `<div class="bar ${vcls}"><i style="width:${vpct.toFixed(0)}%"></i></div>
-       <div class="status-note crit ${vpct >= 93 ? "show" : ""}">⚠ near spillover — throughput at risk</div>`));
+       <div class="status-note crit ${vpct >= 93 ? "show" : ""}">⚠ near spillover; throughput at risk</div>`));
     const tcls = g.temp >= 87 ? "crit" : g.temp >= 80 ? "warn" : "";
     tiles.push(tile("GPU temp", fmt(g.temp), "°C",
       `<div class="bar ${tcls}"><i style="width:${Math.min(g.temp / 95 * 100, 100).toFixed(0)}%"></i></div>
-       <div class="status-note ${tcls} ${tcls ? "show" : ""}">${g.temp >= 87 ? "critical — check airflow" : "running hot"}</div>`));
+       <div class="status-note ${tcls} ${tcls ? "show" : ""}">${g.temp >= 87 ? "critical; check airflow" : "running hot"}</div>`));
     tiles.push(tile("GPU power", fmt(g.power, 1), "W", "", `SM ${fmt(g.clock_mhz)} MHz`));
   } else {
     tiles.push(tile("GPU", "n/a", "", "", g && g.error ? "nvidia-smi unavailable" : ""));
@@ -282,7 +282,7 @@ async function poll() {
     $("updated").textContent = "updated " + new Date().toLocaleTimeString();
   } catch (err) {
     $("live").className = "live err";
-    $("liveText").textContent = "disconnected — retrying";
+    $("liveText").textContent = "disconnected; retrying";
   }
 }
 poll();

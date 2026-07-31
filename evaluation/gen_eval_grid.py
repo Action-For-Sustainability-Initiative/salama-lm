@@ -7,7 +7,7 @@ Axes (fully crossed):
   phrasing     seen | held           (held = paraphrases never trained on)
 
 cs prompts use the Swahili topic strings inside code-switched carrier
-phrasings, and are marked phrasing=held (there is no "seen" CS phrasing —
+phrasings, and are marked phrasing=held (there is no "seen" CS phrasing:
 no condition trains on code-switched text).
 
 Usage: python -m evaluation.gen_eval_grid --out data/alignment/eval_grid.jsonl

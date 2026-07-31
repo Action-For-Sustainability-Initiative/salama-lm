@@ -4,7 +4,7 @@ For each (condition, seed): SFT from the shared pretrained base, then
 evaluate on the full grid. Results land in logs/results/<cond>_s<seed>.json.
 The base condition is evaluated directly (no SFT) as the control.
 
-Everything is resumable — existing result files are skipped — so an
+Everything is resumable; existing result files are skipped; so an
 interrupted sweep continues where it stopped.
 
 Usage:
