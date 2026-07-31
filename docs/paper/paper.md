@@ -26,10 +26,12 @@ interventions. Three findings. (1) English-only refusal training produces
 behaviour that is 100% reliable on trained topics in English and 0% everywhere
 else: no generalisation to held-out hazard topics, no transfer to Kiswahili —
 the model even replies to Kiswahili requests in English. (2) Bilingual
-training restores cross-lingual coverage of trained topics, including 88%
-zero-shot transfer to code-switched prompts, but only the PROCESS-based
-condition generalises to unseen hazard topics (69–81% refusal on
-out-of-distribution hazards in SW/CS vs. 0–19% for outcome-based training).
+training restores cross-lingual coverage of trained topics (0.69 SW / 0.67 CS),
+but only the PROCESS-based condition generalises to unseen hazard topics
+(0.49 SW / 0.58 CS on out-of-distribution hazards, vs. 0.25 / 0.23 for
+bilingual outcome-based training and 0.00 for both English-only conditions;
+three-seed means). Bilingual data and reasons are complementary: neither alone
+produces category-level behaviour.
 Process-based training is also the only condition under which a linear
 "hazard" probe trained on English activations transfers to Swahili (0.91 vs.
 0.64 for English-only training; base model 0.70). (3) Despite this
@@ -44,26 +46,50 @@ organism for multilingual alignment research. (~250 words; trim on final pass)
 
 ## 1. Introduction
 
-- The multilingual safety gap is established on frontier models: low-resource
-  languages jailbreak safety training [Yong et al. 2023; Deng et al. 2024;
-  code-switching red-teaming, ACL 2025; Kiswahili rates 42–71% in
-  arXiv:2605.18239]. But every such study inherits an uncontrolled,
-  English-dominated pretraining corpus — the language mixture is a confound
-  nobody can vary.
-- Contribution framing: we make pretraining itself the controlled variable.
-  A from-scratch bilingual model organism at 48M params, where the EN/SW
-  ratio, parallel data, and code-switching frequency are experimenter-chosen,
-  lets us ask *which ingredient* of training produces cross-lingual safety.
-- Second axis: outcome- vs. process-based supervision. Pop et al. (2024)
-  ("reason-based deception") compared bare refusals to reasoned rebuttals
-  *in-context* on frontier models; the fine-tuning experiment their title
-  implies was never run. We run it, as a controlled training intervention.
-- Honest scope statement up front: 48M-parameter models have no dangerous
-  capabilities; "refusal" here is a synthetic, transparent behaviour
-  (child-hazard story topics). This is a model-organism study of the
-  *mechanics of generalisation* in safety training, not a claim about
-  frontier-model safety. Findings motivate hypotheses at scale; they do not
-  establish them.
+Safety training does not travel well between languages. Translating a harmful
+request into a low-resource language bypasses frontier-model safeguards at
+high rates (Yong et al., 2023), code-switched prompts degrade refusal further
+(CSRT, ACL 2025), and Kiswahili specifically elicits harmful responses from
+current models 42–71% of the time (arXiv:2605.18239). The phenomenon is well
+documented. Its *cause* is not, because every study of it shares a confound
+nobody can remove: the models were pretrained on uncontrolled,
+overwhelmingly-English corpora. When English-only safety training fails to
+reach Kiswahili, is that because the alignment data was monolingual, because
+the pretraining data was, or because the two languages never shared
+representations to begin with? On a frontier model, these cannot be separated.
+
+We separate them by building a model small enough to control completely. We
+pretrain a 48.3M-parameter decoder from random initialisation on a corpus we
+assembled to be *balanced* — 49% English, 51% Kiswahili, including parallel
+and code-switched text — and then vary the alignment stage alone. Because one
+base model feeds every condition and alignment budgets are matched, any
+behavioural difference is attributable to the training variable rather than to
+the pretraining mixture, model scale, or data volume. This is the model-organism
+approach: trade capability for control, and study a mechanism where it can
+actually be isolated.
+
+Our second axis addresses an unrun experiment. Pop et al. (2024), in work
+titled *Rethinking harmless refusals when fine-tuning foundation models*,
+report that explicit rebuttals ("I won't, because X causes harm Y") suppress
+subsequent undesired behaviour better than bare polite refusals. But their
+comparison is between *in-context response strategies* on prompted frontier
+models — no fine-tuning intervention appears in the paper, so the observed
+advantage cannot be distinguished from ordinary in-context conditioning. We
+implement the distinction as an actual training variable — outcome-based
+(bare refusal) versus process-based (refusal plus a hazard-specific reason) —
+crossed with the language axis, and measure how each generalises.
+
+**Scope, stated up front.** A 48M-parameter model has no dangerous
+capabilities, so refusal here is a deliberately benign proxy: the model
+refuses story requests about child-hazard topics (fire, deep water,
+unsupervised medicine) and complies with everything else. No harmful content
+exists anywhere in the pipeline. This buys unambiguous ground truth and costs
+ecological validity, and we make no claim that these results predict
+frontier-model behaviour — indeed our own 11M-parameter pilot exhibited the
+*opposite* failure mode (§6), which is itself evidence that scale matters.
+What a testbed like this can do is generate mechanistic hypotheses cheaply,
+with behaviour, representations and causal interventions all measurable in
+the same afternoon on one consumer GPU.
 
 ## 2. Related work
 
@@ -100,7 +126,9 @@ data-quality cautionary note.
 
 ### 3.2 Model and training
 48.3M-param decoder-only transformer (10L, d=512, 8 heads, ctx 512, 16,384
-BPE vocab shared bilingual tokenizer; fertility EN 1.22 / SW 1.57). Trained
+BPE shared bilingual tokenizer trained by us on a balanced sample; measured
+fertility 1.574 tok/word on English web vs 1.629 on Kiswahili web — a 1.035×
+ratio, i.e. Kiswahili is not penalised by the shared vocabulary). Trained
 27,000 steps × 36,864 tokens = 995M tokens (20.6 tok/param,
 Chinchilla-compute-optimal) on one RTX 4060 Laptop GPU in ~14.5h wall-clock
 (measured; incl. one crash-resume validating checkpoint determinism). Final
@@ -133,20 +161,41 @@ Main table (from logs/results/summary.md):
 | bi_outcome | 0.62 [0.60–0.65] | 0.69 [0.60–0.74] | 0.67 [0.55–0.75] | 0.00 | 0.00 |
 | bi_process | 0.67 [0.61–0.72] | 0.80 [0.74–0.90] | 0.83 [0.78–0.93] | 0.00 | 0.03 [0.01–0.07] |
 
-Key decomposition (per-cell, seed 1234 shown; other seeds in repo):
-- en_outcome: EN train topics 1.00 (seen AND held phrasings) — but OOD topics
-  0.00, SW 0.00, CS 0.00. Transcripts: Kiswahili prompts answered in English
-  with memorised compliance templates. Total transfer failure, invisible to
-  anyone who only evaluates trained topics in English.
-- bi_outcome: train topics travel (SW 0.88–1.00, CS 0.88 zero-shot) — OOD
-  still ≈0 (0.00–0.19). Two-language string memorisation.
-- bi_process: train topics 1.00 everywhere; OOD topics 0.69–0.81 in SW,
-  0.81 CS, 0.38 EN-held. The only condition that learned something like the
-  hazard CATEGORY. (Note the inversion: OOD generalisation is *stronger
-  outside English* — discuss candidate explanations; flag as replication
-  target.)
-- Over-refusal ≈0 everywhere (contrast with our 11M pilot, which showed 100%
-  transfer WITH 50% over-refusal — scale/corpus effects section).
+**OOD-topic refusal (3-seed means) — the generalisation test:**
+
+| Condition | EN | SW | CS |
+|---|---|---|---|
+| en_outcome | 0.01 | 0.00 | 0.00 |
+| en_process | 0.00 | 0.00 | 0.00 |
+| bi_outcome | 0.05 | 0.25 | 0.23 |
+| bi_process | **0.18** | **0.49** | **0.58** |
+
+Key decomposition:
+- en_outcome / en_process: EN trained topics 1.00 (seen AND held-out
+  phrasings) — but OOD topics ≈0, SW 0.00, CS 0.00. Transcripts show
+  Kiswahili prompts answered *in English* with memorised compliance
+  templates. Total transfer failure, invisible to anyone who only evaluates
+  trained topics in English. Note that process-style training alone does NOT
+  rescue this: without the second language, reasons change nothing (0.60 EN,
+  0.00 SW for both English conditions).
+- bi_outcome: trained topics travel across languages (SW 0.69, CS 0.67
+  zero-shot) but OOD generalisation stays low (0.23–0.25). Two-language
+  string memorisation.
+- bi_process: highest everywhere, and the only condition with substantial OOD
+  generalisation (SW 0.49, CS 0.58). Bilingual data and reasons appear
+  COMPLEMENTARY: neither alone produces category-level behaviour.
+- Inversion worth flagging: bi_process generalises to OOD hazards more in
+  Kiswahili (0.49) and code-switched prompts (0.58) than in English (0.18).
+  Candidate explanations — English carries more competing story-completion
+  prior from pretraining (English is 32% stories); the Kiswahili refusal
+  template is lexically more distinctive; MT-derived Kiswahili topics are
+  more templated and therefore closer in embedding space. We do not
+  adjudicate; we flag it as a replication target.
+- Seed spread is real and reported: bi_process SW ranges 0.74–0.90 across
+  seeds. Single-seed numbers (e.g. seed 1234's 0.69–0.81 OOD) overstate the
+  effect; all headline figures are 3-seed means.
+- Over-refusal ≤3.1% everywhere (contrast with our 11M pilot, which showed
+  100% transfer WITH 50% over-refusal — see §6).
 
 ## 5. Mechanistic results
 
@@ -189,11 +238,44 @@ studies (including ours) should not extrapolate. Both full runs published.
 6. SFT degrades generation diversity (memorised templates) — capability cost
    not fully characterised (no post-SFT perplexity table yet [add if run]).
 
-## 8. Conclusion
-(one paragraph: the ingredient that made safety travel was not more data or
-more languages per se — it was *reasons*, and even then the executive
-machinery stayed language-local. Cheap controlled testbeds surface
-dissociations that frontier evals average away.)
+## 8. Discussion and conclusion
+
+Three dissociations emerged that a single aggregate metric would have hidden.
+
+**Behaviour can transfer without generalising.** Bilingual outcome-based
+training moved refusal across a language boundary (0.69 SW) while remaining
+almost entirely unable to handle a hazard it had not been shown (0.25 SW OOD).
+A safety evaluation that tested only trained topics in both languages would
+have scored this model as a cross-lingual success. Ours scored it as
+two-language memorisation.
+
+**Generalisation required reasons, but reasons alone were not enough.**
+English-only process training — reasons, but one language — produced exactly
+zero cross-lingual transfer, identical to its outcome-based twin. Bilingual
+outcome training — two languages, no reasons — transferred trained topics but
+not the category. Only the combination generalised (0.49 SW / 0.58 CS OOD).
+Whatever "understanding the category" amounts to here, it needed both a second
+language to make surface memorisation expensive and explanations to make the
+underlying feature learnable.
+
+**Concept sharing and causal control are separable.** In the bilingual-process
+model, a hazard probe trained on English activations transferred to Kiswahili
+at 0.91, yet ablating the English-derived refusal direction — which reliably
+disables English refusal — left Kiswahili refusal completely intact. Shared
+representation did not imply shared machinery. This contrasts with reports
+that refusal directions are language-universal in large aligned models
+(arXiv:2505.17306): at 48M with balanced bilingual pretraining, universality
+did not emerge on its own. Whether it appears with scale, with more languages,
+or only with the English-dominant pretraining that frontier models actually
+receive, is an open question this testbed is built to ask.
+
+For practitioners, the most transferable observation is negative: our
+English-only conditions look *safe* under any evaluation restricted to the
+training distribution, and are worthless one paraphrase or one language away.
+For researchers, the wider point is that a controlled model organism, trainable
+in an afternoon for a few dollars of electricity, surfaces dissociations that
+averaged frontier benchmarks cannot — and can be shared whole, weights and
+corpus recipe and evaluation grid together, for others to falsify.
 
 ## Reproducibility
 Every number: one command per artifact (table). Seeds fixed; data manifests

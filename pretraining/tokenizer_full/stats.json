@@ -1,0 +1,14 @@
+{
+  "vocab_size": 16384,
+  "special_tokens": [
+    "<|endoftext|>",
+    "<|user|>",
+    "<|assistant|>",
+    "<|pad|>"
+  ],
+  "fertility_en_stories": 1.218,
+  "fertility_en_web": 1.574,
+  "fertility_sw_web": 1.629,
+  "fertility_sw_wiki": 1.59,
+  "sw_en_ratio": 1.035
+}
