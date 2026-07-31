@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>salama-lm playground</title>
+<style>
+  :root {
+    --bg: #0b0e14; --surface: #131720; --surface-2: #1a1f2b; --border: #232937;
+    --text: #e6eaf2; --muted: #97a0b3; --faint: #6b7488;
+    --accent: #3e8ee8; --sw: #cc7f2f; --good: #3fb68b; --warn: #e0b04a; --crit: #e5484d;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--text);
+         font: 14.5px/1.55 system-ui, "Segoe UI", sans-serif;
+         display: flex; flex-direction: column; }
+
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+           padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  h1 { font-size: 15px; font-weight: 650; margin-right: 4px; }
+  h1 span { color: var(--faint); font-weight: 400; }
+  select, .num { background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+           border-radius: 8px; padding: 7px 10px; font-size: 13px; cursor: pointer; max-width: 240px; }
+  label.ctl { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+  input[type=range] { accent-color: var(--accent); width: 90px; }
+  .toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .toggle button { background: var(--surface-2); color: var(--muted); border: 0; padding: 7px 12px;
+                   font-size: 12.5px; cursor: pointer; }
+  .toggle button.on { background: var(--accent); color: #fff; }
+
+  #presets { display: flex; gap: 6px; overflow-x: auto; padding: 8px 16px;
+             border-bottom: 1px solid var(--border); background: var(--surface); }
+  .chip { flex-shrink: 0; font-size: 12px; padding: 5px 10px; border-radius: 999px;
+          border: 1px solid var(--border); background: var(--surface-2); color: var(--muted);
+          cursor: pointer; white-space: nowrap; }
+  .chip:hover { color: var(--text); border-color: var(--accent); }
+  .chip.forbidden { border-color: color-mix(in srgb, var(--crit) 45%, transparent); }
+  .chip.ood::after { content: " ·OOD"; color: var(--warn); font-weight: 600; }
+
+  main { flex: 1; overflow-y: auto; padding: 18px 0 8px; }
+  .thread { max-width: 880px; margin: 0 auto; padding: 0 16px; display: flex;
+            flex-direction: column; gap: 14px; }
+  .msg.user { align-self: flex-end; max-width: 78%; background: var(--accent);
+              color: #fff; padding: 9px 14px; border-radius: 16px 16px 4px 16px; }
+  .msg.bot { align-self: stretch; display: flex; gap: 10px; }
+  .bot .col { flex: 1; background: var(--surface); border: 1px solid var(--border);
+              border-radius: 14px; padding: 10px 14px; min-width: 0; }
+  .bot .who { font-size: 11px; font-weight: 650; letter-spacing: .5px; text-transform: uppercase;
+              color: var(--muted); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+  .badge { font-size: 10.5px; font-weight: 700; padding: 1.5px 8px; border-radius: 999px; }
+  .badge.refused { color: var(--crit); background: color-mix(in srgb, var(--crit) 14%, transparent); }
+  .badge.complied { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+  .stats { font-size: 10.5px; color: var(--faint); font-weight: 400; text-transform: none; letter-spacing: 0; }
+  .text { white-space: pre-wrap; word-wrap: break-word; }
+  .text .marker { color: var(--crit); font-weight: 600; }
+  .thinking { color: var(--faint); font-style: italic; }
+  .sysnote { text-align: center; font-size: 12px; color: var(--faint); }
+
+  footer { border-top: 1px solid var(--border); background: var(--surface); padding: 12px 16px 14px; }
+  .inputrow { max-width: 880px; margin: 0 auto; display: flex; gap: 10px; }
+  #box { flex: 1; background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+         border-radius: 12px; padding: 11px 14px; font: inherit; resize: none; min-height: 46px; max-height: 140px; }
+  #box:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  #send { background: var(--accent); color: #fff; border: 0; border-radius: 12px;
+          padding: 0 22px; font-size: 14px; font-weight: 650; cursor: pointer; min-height: 46px; }
+  #send:disabled { opacity: .45; cursor: default; }
+  .hint { max-width: 880px; margin: 6px auto 0; font-size: 11px; color: var(--faint); }
+  @media (max-width: 700px) { .bot { flex-direction: column; } input[type=range] { width: 64px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>salama-lm <span>playground</span></h1>
+  <label class="ctl">model <select id="modelA" aria-label="Model A"></select></label>
+  <label class="ctl" id="cmpWrap" style="display:none">vs <select id="modelB" aria-label="Model B"></select></label>
+  <div class="toggle" role="group" aria-label="Compare mode">
+    <button id="single" class="on">single</button><button id="compare">compare</button>
+  </div>
+  <div class="toggle" role="group" aria-label="Prompt mode">
+    <button id="chatMode" class="on">chat</button><button id="rawMode">raw</button>
+  </div>
+  <label class="ctl">temp <input id="temp" type="range" min="0" max="1.2" step="0.1" value="0">
+    <span id="tempVal" class="num" style="padding:4px 8px">0.0</span></label>
+  <button class="chip" id="clear" style="margin-left:auto">clear</button>
+</header>
+
+<div id="presets" aria-label="Preset test prompts"></div>
+
+<main><div class="thread" id="thread">
+  <div class="sysnote">Single-turn model — each message is independent. Chips above are real
+  experimental prompts (red border = forbidden topic, ·OOD = never seen in training).</div>
+</div></main>
+
+<footer>
+  <div class="inputrow">
+    <textarea id="box" rows="1" placeholder="English, Kiswahili, or mixed — press Enter to send"></textarea>
+    <button id="send">Send</button>
+  </div>
+  <div class="hint">temp 0 = deterministic (matches the paper's evals) · compare mode sends every prompt to both models</div>
+</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const state = { compare: false, raw: false, temp: 0 };
+
+async function loadModels() {
+  const models = await (await fetch("/api/models")).json();
+  for (const sel of [$("modelA"), $("modelB")]) {
+    sel.innerHTML = models.map(m => `<option value="${m.path}">${m.label}</option>`).join("");
+  }
+  const bi = models.findIndex(m => m.label.includes("bilingual · process"));
+  const en = models.findIndex(m => m.label.includes("EN-only · outcome"));
+  if (bi >= 0) $("modelA").selectedIndex = bi;
+  if (en >= 0) $("modelB").selectedIndex = en;
+}
+
+async function loadPresets() {
+  const { presets } = await (await fetch("/api/presets")).json();
+  $("presets").innerHTML = presets.map(p =>
+    `<button class="chip ${p.cls} ${p.split === "ood" ? "ood" : ""}"
+       title="${p.lang.toUpperCase()} · ${p.cls} · ${p.split}">${p.text}</button>`).join("");
+  $("presets").querySelectorAll(".chip").forEach(c =>
+    c.addEventListener("click", () => { $("box").value = c.textContent.replace(/ ·OOD$/, ""); $("box").focus(); }));
+}
+
+function addUser(text) {
+  const el = document.createElement("div");
+  el.className = "msg user"; el.textContent = text;
+  $("thread").appendChild(el);
+}
+
+function highlight(text, refused) {
+  const esc = text.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  if (!refused) return esc;
+  const m = esc.match(/^(I cannot|I can not|I will not|Siwezi|Sitaki)([^.]*\.)?/);
+  return m ? `<span class="marker">${m[0]}</span>` + esc.slice(m[0].length) : esc;
+}
+
+function label(sel) { return sel.options[sel.selectedIndex].text; }
+
+async function ask(text) {
+  addUser(text);
+  const row = document.createElement("div");
+  row.className = "msg bot";
+  const targets = state.compare ? [$("modelA"), $("modelB")] : [$("modelA")];
+  const cols = targets.map(sel => {
+    const col = document.createElement("div");
+    col.className = "col";
+    col.innerHTML = `<div class="who">${label(sel)}</div><div class="text thinking">generating…</div>`;
+    row.appendChild(col);
+    return col;
+  });
+  $("thread").appendChild(row);
+  row.scrollIntoView({ behavior: "smooth", block: "end" });
+
+  await Promise.all(targets.map(async (sel, i) => {
+    try {
+      const r = await (await fetch("/api/generate", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ckpt: sel.value, prompt: text,
+                               temperature: state.temp, raw: state.raw }),
+      })).json();
+      cols[i].querySelector(".who").innerHTML =
+        `${label(sel)} <span class="badge ${r.refused ? "refused" : "complied"}">${r.refused ? "refused" : "complied"}</span>
+         <span class="stats">${r.tokens} tok · ${r.latency_ms} ms</span>`;
+      cols[i].querySelector(".text").className = "text";
+      cols[i].querySelector(".text").innerHTML = highlight(r.completion || "(empty)", r.refused);
+    } catch (e) {
+      cols[i].querySelector(".text").textContent = "error: " + e;
+    }
+  }));
+  row.scrollIntoView({ behavior: "smooth", block: "end" });
+}
+
+$("send").addEventListener("click", async () => {
+  const text = $("box").value.trim();
+  if (!text) return;
+  $("box").value = "";
+  $("send").disabled = true;
+  await ask(text);
+  $("send").disabled = false;
+  $("box").focus();
+});
+$("box").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("send").click(); }
+});
+$("single").addEventListener("click", () => setCompare(false));
+$("compare").addEventListener("click", () => setCompare(true));
+function setCompare(v) {
+  state.compare = v;
+  $("single").classList.toggle("on", !v);
+  $("compare").classList.toggle("on", v);
+  $("cmpWrap").style.display = v ? "" : "none";
+}
+$("chatMode").addEventListener("click", () => setRaw(false));
+$("rawMode").addEventListener("click", () => setRaw(true));
+function setRaw(v) {
+  state.raw = v;
+  $("chatMode").classList.toggle("on", !v);
+  $("rawMode").classList.toggle("on", v);
+  $("box").placeholder = v ? "Story opening to continue, e.g. “Siku moja…”"
+                           : "English, Kiswahili, or mixed — press Enter to send";
+}
+$("temp").addEventListener("input", () => {
+  state.temp = Number($("temp").value);
+  $("tempVal").textContent = state.temp.toFixed(1);
+});
+$("clear").addEventListener("click", () => {
+  $("thread").innerHTML = "";
+});
+
+loadModels(); loadPresets();
+</script>
+</body>
+</html>
