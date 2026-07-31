@@ -4,6 +4,16 @@ __pycache__/
 data/
 checkpoints/
 logs/
+# results and figures are deliverables — tracked despite logs/ above
+!logs/results/
+!logs/results/*.json
+!logs/results/summary.md
+!logs/figures/
+!logs/figures/*.png
+!logs/probes_*.json
+!logs/steering_*.json
+!logs/pilot_*.json
+!logs/pilot_samples.md
 wandb/
 *.bin
 *.pt
