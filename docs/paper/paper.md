@@ -48,9 +48,14 @@ organism for multilingual alignment research. (~250 words; trim on final pass)
 
 Safety training does not travel well between languages. Translating a harmful
 request into a low-resource language bypasses frontier-model safeguards at
-high rates (Yong et al., 2023), code-switched prompts degrade refusal further
-(CSRT, ACL 2025), and Kiswahili specifically elicits harmful responses from
-current models 42–71% of the time (arXiv:2605.18239). The phenomenon is well
+high rates (Yong et al., 2023), code-switched prompts yield 46.7% more
+successful attacks than their English equivalents (Yoo et al., 2025), and
+multi-turn attacks in Kiswahili elicit harmful responses from commercial
+systems 41.8–70.9% of the time (Marx & Dunaiski, 2026). Coverage, not any
+special fragility of Kiswahili, appears to be the issue: the same study
+reports *higher* rates in English (52.7–83.6%), and of 24 leading models
+claiming multilingual support, only five report any multilingual safety
+alignment or red-teaming at all (Yong et al., 2025). The phenomenon is well
 documented. Its *cause* is not, because every study of it shares a confound
 nobody can remove: the models were pretrained on uncontrolled,
 overwhelmingly-English corpora. When English-only safety training fails to
@@ -71,13 +76,18 @@ actually be isolated.
 Our second axis addresses an unrun experiment. Pop et al. (2024), in work
 titled *Rethinking harmless refusals when fine-tuning foundation models*,
 report that explicit rebuttals ("I won't, because X causes harm Y") suppress
-subsequent undesired behaviour better than bare polite refusals. But their
-comparison is between *in-context response strategies* on prompted frontier
-models — no fine-tuning intervention appears in the paper, so the observed
-advantage cannot be distinguished from ordinary in-context conditioning. We
-implement the distinction as an actual training variable — outcome-based
-(bare refusal) versus process-based (refusal plus a hazard-specific reason) —
-crossed with the language axis, and measure how each generalises.
+subsequent undesired behaviour better than bare polite refusals. Their method,
+however, contains no fine-tuning: across four GPT-4 releases in role-play
+scenarios they *fix the prior assistant turn in context* to a refusal or a
+rebuttal and measure what follows, then infer a recommendation about
+fine-tuning that the experiments never test. The observed advantage is
+therefore indistinguishable from ordinary in-context conditioning. We
+implement their untested recommendation as an actual training variable —
+outcome-based (bare refusal) versus process-based (refusal plus a
+hazard-specific reason) — crossed with the language axis, at matched budget.
+Turpin et al. (2023) supply the necessary caution: stated reasons need not be
+the causes of behaviour, so we treat the appended reason as a supervision
+signal rather than an explanation, and make no faithfulness claim.
 
 **Scope, stated up front.** A 48M-parameter model has no dangerous
 capabilities, so refusal here is a deliberately benign proxy: the model
@@ -91,27 +101,10 @@ What a testbed like this can do is generate mechanistic hypotheses cheaply,
 with behaviour, representations and causal interventions all measurable in
 the same afternoon on one consumer GPU.
 
-## 2. Related work
+<!-- Full section in related_work.md; every citation independently verified
+     against primary sources (20 checked, 19 confirmed, 1 metadata fix). -->
 
-(compressed — expand from research notes)
-- Multilingual safety gaps on pretrained LLMs: Yong et al. 2023 (2310.02446);
-  Deng et al. ICLR'24 (2310.06474); CSRT ACL'25; TukaBench (2606.01322);
-  multilingual refusal alignment (2606.07535); state-of-field survey
-  (2505.24119).
-- Refusal directions: Arditi et al. NeurIPS'24 (2406.11717); cross-lingual
-  universality in large aligned LLMs (2505.17306) — our steering result is a
-  scale-contrast to this. "More than a single direction" (2602.02132).
-- Process vs. outcome: Pop et al. 2024 (2406.19552); CoT-unfaithfulness
-  caveats (Turpin et al. 2023).
-- Small-model pretraining: TinyStories (2305.07759); Regional-TinyStories
-  (IJCNLP-AACL'25, 5–157M bilingual models, no safety); InkubaLM (0.4B incl.
-  Swahili, capability-only); safety-at-pretraining at 1.7B+ English-only
-  (2504.16980, 2508.06601).
-- Controlled from-scratch bilingual pretraining without safety: Conneau et
-  al. 2019; mixed-language documents ablation (2601.00364).
-- Gap we fill: the intersection (controlled bilingual pretraining × alignment
-  fine-tuning × mechanistic analysis) appears unclaimed; framed as testbed,
-  not discovery of the gap phenomenon.
+{{INCLUDE: related_work.md}}
 
 ## 3. The testbed
 
