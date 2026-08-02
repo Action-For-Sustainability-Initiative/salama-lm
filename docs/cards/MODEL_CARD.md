@@ -67,7 +67,7 @@ porting.
 | Optimiser | AdamW, lr 5e-4 cosine w/ 700-step warmup, β (0.9, 0.95), wd 0.1, grad clip 1.0 |
 | Batch | micro-batch 8 × grad-accum 9 (see note) |
 | Hardware | **one** NVIDIA RTX 4060 Laptop GPU (8 GB), Windows 11 |
-| Wall-clock | ~14.5 h (~20,200 tok/s sustained), including one crash-and-resume |
+| Wall-clock | ~14.5 h (~20,200 tok/s sustained), including two stop-and-resume events (~480 and ~120 steps replayed) |
 | Final losses | train 2.31 · val EN **2.18** · val SW **3.18** · val CS **1.34** |
 
 Hardware note worth reusing: micro-batch 24 allocates 9,920 MiB on an
@@ -159,7 +159,8 @@ failure mode (full transfer with 50% over-refusal).
    **pending native-speaker review**.
 5. Steering used a single seed, layer and extraction method; probes are
    correlational.
-6. Small eval cells (n = 16–24 per cell); greedy decoding only.
+6. Small eval cells (n = 16-32 per cell, depending on topic/phrasing
+   combination); greedy decoding only.
 7. Alignment training collapses generation diversity into memorised templates, expected for SFT at this scale, but it means the models are poor
    storytellers after alignment.
 

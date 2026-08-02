@@ -33,14 +33,16 @@ condition generalises to hazard topics neither language ever saw in
 training (0.49 Kiswahili, 0.58 code-switched, versus 0.25 and 0.23 for
 bilingual outcome-based training and 0.00 for both English-only conditions;
 three-seed means): a second language and an explanatory reason are
-complementary, and neither alone produces category-level behaviour. The same
-condition is the only one under which a linear hazard probe trained on
-English activations transfers to Kiswahili (0.91, versus 0.64 for
-English-only training and 0.70 for the untouched base model). Third, despite
+complementary, and neither alone produces category-level behaviour. Of the
+three conditions we probed mechanistically (base, English-only outcome, and
+bilingual process), only bilingual process shows a linear hazard probe
+trained on English activations transferring strongly to Kiswahili (0.91,
+versus 0.64 for English-only training and 0.70 for the untouched base
+model). Third, despite
 this representational alignment, the causal machinery stays language-local:
 ablating the English-derived refusal direction (Arditi et al., 2024)
 collapses English refusal (0.675 to 0.138) while leaving Kiswahili refusal
-untouched (0.875 to 0.913). At this scale, cross-lingual safety appears to be
+essentially unchanged (0.875 to 0.913). At this scale, cross-lingual safety appears to be
 implemented as a shared concept feeding language-specific execution
 mechanisms, not a universal refusal direction. We release the full stack,
 corpus recipes, tokenizer, training code, all thirteen checkpoints, and the
@@ -132,9 +134,9 @@ inherited from an uncontrolled crawl.
 | en_web | FineWeb-Edu `sample-10BT` | ODC-BY 1.0 | 209.1M |
 | sw_web | FineWeb-2 `swh_Latn` | ODC-BY 1.0 | 523.7M |
 | sw_wiki | Kiswahili Wikipedia (20231101 dump) | CC-BY-SA-3.0 | 17.5M |
-| sw_stories | synthetic: MT of en_stories via Helsinki-NLP/opus-mt-en-sw | derivative | 36.3M |
-| cs_text | synthetic: inter-sentential EN/SW alternation | derivative | 21.1M |
-| parallel_docs | synthetic: sentence-aligned EN/SW pairs | derivative | 30.6M |
+| sw_stories | synthetic: MT of en_stories via Helsinki-NLP/opus-mt-en-sw | derivative of CDLA-Sharing-1.0 + Apache-2.0 (MT model) | 36.3M |
+| cs_text | synthetic: inter-sentential EN/SW alternation | derivative of the above | 21.1M |
+| parallel_docs | synthetic: sentence-aligned EN/SW pairs | derivative of the above | 30.6M |
 
 Pure-English tokens (en_stories + en_web) total 609.9M; pure-Kiswahili tokens
 (sw_web + sw_wiki + sw_stories) total 577.5M; the remaining 51.7M tokens
@@ -148,17 +150,21 @@ knowledge, the largest deduplicated Kiswahili web corpus with a stated
 license. No comparably-sized Kiswahili narrative corpus exists, so sw_stories
 is synthesised by machine-translating TinyStories with a MarianMT model; this
 is translationese and is documented as such (`docs/DATA.md`) rather than
-presented as native text. The design plan called for parallel EN-SW text from
-OPUS-100, but OPUS-100 turns out to have no English-Kiswahili pair at all, a
-fact discoverable only by attempting the download; we substitute the
+presented as native text. The design plan called for parallel EN-SW text from OPUS-100, but attempting
+to load its English-Kiswahili configuration failed outright: the dataset
+loader's error enumerated all 100 language pairs it actually provides, and
+Kiswahili is not among them, a fact discoverable only once the pipeline tried
+to use it, not from any prior documentation check. We substitute the
 sentence-aligned pairs that fall out of the MT job itself, and build cs_text
 and parallel_docs from those pairs. An earlier version of cs_text built its
 alternating-language documents from *shuffled* sentence pairs, which produced
 locally fluent sentences inside globally incoherent documents; reading actual
 samples (rather than trusting that "no encoding errors" meant "correct data")
 caught this before it reached training, and the fix, consuming pairs in their
-original story order, produces documents that stay a coherent single
-narrative while switching language mid-sentence.
+original story order, produces documents that alternate language between
+whole sentences (never mid-sentence) while staying a single coherent
+narrative, except for the occasional document that spans a story boundary,
+since no boundary marker survives into the sentence-pair file.
 
 A shared byte-level BPE tokenizer (16,384 tokens, including four reserved
 control tokens for the chat format) was trained on a balanced sample of both
@@ -198,13 +204,19 @@ before any load) is not the throughput bottleneck we originally assumed:
 under sustained training load the enforced limit rises to 125W, draw sits at
 81W, and every hardware and software throttle flag remains inactive
 throughout training. The real limiter at this model size is memory bandwidth,
-not power. Training took approximately 14.5 hours of wall-clock time,
-including one unplanned interruption (a supervising session restart killed
-the training process at step 11,140); the checkpoint-every-1,000-steps
-design meant the resumed run repeated only about 140 steps, and its loss
-curve continued smoothly from the recovery point, an unplanned but genuine
-test of the checkpoint and resume path exercised deliberately by
-`tests/test_resume.py`. Final losses were 2.31 (train), 2.18 (English
+not power. Training took approximately 14.5 hours of wall-clock time across two
+stop-and-resume events: an unplanned one, in which an unrelated session
+restart killed the training process shortly after step 10,500, and a
+deliberate one, in which the run was paused intentionally and resumed later
+from shortly after step 11,140. The checkpoint-every-1,000-steps design meant
+the two resumes together repeated only about 600 of the run's 27,000 steps
+(roughly 480 and 120 steps respectively), and the training-loss curve
+continued smoothly from each recovery point with no visible discontinuity,
+a real-world exercise of the same checkpoint and resume path that
+`tests/test_resume.py` verifies in isolation: that a run stopped and resumed
+from checkpoint reaches the same loss as one that never stopped. Final
+losses, train at step 26,999 and validation at step 26,000, the last point
+at which the periodic evaluation ran, were 2.31 (train), 2.18 (English
 validation), 3.18 (Kiswahili validation), and 1.34 (code-switched
 validation); the lower code-switched loss reflects the simpler MT-derived
 register of that validation split rather than any special model competence
@@ -218,8 +230,9 @@ control, and four fine-tuned conditions crossing alignment language
 process-based), each trained with three seeds (1234, 2345, 3456) for twelve
 experimental checkpoints in total. The task is a transparent, deliberately
 benign refusal behaviour: the model must decline story requests about six
-child-hazard topics (fire, matches, deep water, unsupervised medicine,
-climbing to a dangerous height) and comply with requests about eight benign
+child-hazard topics (playing with fire, playing with matches, swimming alone
+in deep water, taking medicine without asking, drinking unattended bottles,
+climbing to a dangerous height alone) and comply with requests about eight benign
 topics (a friendly puppy, a birthday party, and similar), presented through
 four templated request phrasings per language. The outcome condition trains
 a single fixed refusal sentence; the process condition appends one
@@ -239,8 +252,11 @@ within a single sentence, are likewise reserved for evaluation only. These
 guarantees are not merely asserted: nine automated tests
 (`tests/test_alignment_data.py`) check the training files directly, verifying
 that no held-out topic or phrasing string appears in any training set, that
-English-only conditions contain no Kiswahili text, and that outcome and
-process conditions share an identical refusal prefix.
+English-only conditions contain no Kiswahili text, and, for the English-only
+outcome and process conditions specifically, that the two share an identical
+refusal prefix (the bilingual pair shares the same guarantee by construction,
+drawing from one refusal string per language in the generator, but this is
+not yet separately covered by a test).
 
 ### 3.4 Evaluation
 
@@ -255,11 +271,13 @@ documents specifically degraded LLM-judge reliability for low-resource
 languages, exactly the failure mode a deterministic marker match avoids.
 Headline tables report three-seed means with min-max ranges rather than
 standard errors or confidence intervals, since three seeds cannot support a
-normality assumption. Independently of the data-level guarantees in §3.3,
-sixteen automated tests across the codebase verify model and pipeline
-correctness: initial loss equal to the log of the vocabulary size, intact
-causal masking, and bit-for-bit agreement between an uninterrupted training
-run and one that is stopped and resumed from checkpoint.
+normality assumption. Across the whole codebase, sixteen automated tests
+guard correctness in total: the nine data-integrity tests already described
+in §3.3, plus seven further tests covering model and pipeline correctness,
+initial loss equal to the log of the vocabulary size, intact causal masking,
+a tokenizer encode-decode round trip, and bit-for-bit agreement between an
+uninterrupted training run and one that is stopped and resumed from
+checkpoint.
 
 ## 4. Behavioural results
 
@@ -271,7 +289,7 @@ Main table (from logs/results/summary.md):
 | en_outcome | 0.60 [0.60–0.61] | 0.00 | 0.00 | 0.00 | 0.00 |
 | en_process | 0.60 [0.60–0.60] | 0.00 | 0.00 | 0.00 | 0.00 |
 | bi_outcome | 0.62 [0.60–0.65] | 0.69 [0.60–0.74] | 0.67 [0.55–0.75] | 0.00 | 0.00 |
-| bi_process | 0.67 [0.61–0.72] | 0.80 [0.74–0.90] | 0.83 [0.78–0.93] | 0.00 | 0.03 [0.01–0.07] |
+| bi_process | 0.67 [0.61–0.72] | 0.80 [0.74–0.90] | 0.83 [0.78–0.93] | 0.00 [0.00–0.01] | 0.03 [0.01–0.07] |
 
 **OOD-topic refusal (3-seed means); the generalisation test:**
 
@@ -290,11 +308,23 @@ Key decomposition:
   trained topics in English. Note that process-style training alone does NOT
   rescue this: without the second language, reasons change nothing (0.60 EN,
   0.00 SW for both English conditions).
-- bi_outcome: trained topics travel across languages (SW 0.69, CS 0.67
-  zero-shot) but OOD generalisation stays low (0.23–0.25). Two-language
-  string memorisation.
-- bi_process: highest everywhere, and the only condition with substantial OOD
-  generalisation (SW 0.49, CS 0.58). Bilingual data and reasons appear
+- bi_outcome: note first that Table 1's headline SW/CS numbers (0.69, 0.67)
+  pool trained and out-of-distribution topics together, so they understate
+  how strong the trained-topic transfer actually is. Recomputed on trained
+  topics alone, bi_outcome refuses forbidden requests at 0.98 (Kiswahili),
+  0.96 (code-switched), and 1.00 (English), across seeds. Only the
+  code-switched figure is genuinely zero-shot: bi_outcome's training data
+  directly includes Kiswahili refusal examples for these same hazard topics
+  (half of its 2,000 Kiswahili training rows are refusals in this style), so
+  strong Kiswahili performance on trained topics reflects direct bilingual
+  supervision, not transfer. Generalisation to hazards the model never saw in
+  any language stays low regardless (SW 0.25, CS 0.23; the OOD table above).
+  This is two-language string memorisation: excellent on what it was shown,
+  in two languages, and barely better than chance on what it was not.
+- bi_process: highest OOD refusal in every language, and the only condition
+  with generalisation that looks substantial rather than marginal (SW 0.49,
+  CS 0.58, versus 0.23-0.25 for bi_outcome and approximately 0.00-0.05 for
+  both English-only conditions). Bilingual data and reasons appear
   COMPLEMENTARY: neither alone produces category-level behaviour.
 - Inversion worth flagging: bi_process generalises to OOD hazards more in
   Kiswahili (0.49) and code-switched prompts (0.58) than in English (0.18).
@@ -303,18 +333,34 @@ Key decomposition:
   template is lexically more distinctive; MT-derived Kiswahili topics are
   more templated and therefore closer in embedding space. We do not
   adjudicate; we flag it as a replication target.
-- Seed spread is real and reported: bi_process SW ranges 0.74–0.90 across
-  seeds. Single-seed numbers (e.g. seed 1234's 0.69–0.81 OOD) overstate the
-  effect; all headline figures are 3-seed means.
-- Over-refusal ≤3.1% everywhere (contrast with our 11M pilot, which showed
-  100% transfer WITH 50% over-refusal, see §6).
+- Seed spread is real and reported: bi_process's OOD refusal ranges 0.74–0.90
+  across seeds in Kiswahili. Single-seed numbers can mislead in either
+  direction, e.g. seed 1234 alone gives 0.75 (Kiswahili) and 0.81
+  (code-switched) OOD, both within but not centred on the three-seed mean; all
+  headline figures in this paper are three-seed means for that reason.
+- Over-refusal is exactly zero in every condition except bi_process, where it
+  is small but real: mean false-refusal of 0.4% (English), 3.1% (Kiswahili),
+  and 2.1% (code-switched), with a single-seed maximum of 7.3% (Kiswahili).
+  This is the only place any condition pays a measurable safety-helpfulness
+  cost for its generalisation, and it is far smaller than the cost paid by
+  our 11M-parameter pilot, which showed complete refusal transfer alongside
+  50% over-refusal (§6).
 
 ## 5. Mechanistic results
 
 ### 5.1 Probes
 
-For each model we extract the residual-stream activation at the final prompt
-token, at every layer, across all 440 evaluation prompts, using
+Probing and steering are comparatively expensive per checkpoint, so we ran
+both on three of the five conditions rather than all twelve experimental
+checkpoints: the untouched base model, English-only outcome training, and
+bilingual process training, chosen as the two ends of the behavioural
+spectrum in §4 plus the pretrained-only control. The remaining two
+conditions (English-only process, bilingual outcome) were not mechanistically
+tested, and the claims below should be read as comparisons among these three,
+not as a claim about all five.
+
+For each of these models we extract the residual-stream activation at the
+final prompt token, at every layer, across all 440 evaluation prompts, using
 TransformerLens's native hook interface with no weight porting required, and
 train a logistic-regression probe at each layer to distinguish forbidden
 (hazard) from benign topics. The decisive test is cross-lingual transfer: a
@@ -328,10 +374,10 @@ English-only outcome training does not improve on this baseline; its
 cross-lingual transfer, 0.64 (English to Kiswahili) and 0.72 (English to
 code-switched), is essentially the base model's number, consistent with the
 behavioural finding that English-only training never engages a cross-lingual
-mechanism at all. Bilingual process training is the clear outlier, raising
-transfer to 0.91 (English to Kiswahili) and 0.94 (English to code-switched):
-in this condition alone, the hazard concept becomes close to
-language-agnostic in the model's internal representation. As sanity checks, a
+mechanism at all. Bilingual process training reaches the highest transfer of
+the three, 0.91 (English to Kiswahili) and 0.94 (English to code-switched):
+of the conditions we probed, only this one shows the hazard concept becoming
+close to language-agnostic in the model's internal representation. As sanity checks, a
 trivial language-identity probe reaches 1.00 accuracy at layer 0 in every
 model (the tokenizer alone determines this), and a probe trained directly on
 each model's own refusal behaviour also reaches 1.00; because forbidden and
@@ -354,14 +400,20 @@ collapses English refusal from 0.675 to 0.138, but leaves Kiswahili refusal
 at 0.875 to 0.913 essentially unchanged (a cross-lingual causal transfer
 ratio of approximately zero) and leaves code-switched refusal likewise
 unaffected. Injecting the same direction into benign prompts induces refusal
-only weakly, and predominantly in English and code-switched text rather than
-in Kiswahili.
+only weakly at every strength tested, and unevenly across languages: most in
+code-switched text (up to 0.40 at the highest strength), least in English (up
+to 0.10), with Kiswahili in between and comparatively flat across strengths
+(0.11-0.15). English, the language the direction was extracted from, is the
+one least affected by adding it back in, which is itself a small piece of
+evidence that ablation and injection are not simply inverses of one another
+in this model.
 
 Read together with §5.1, this is the paper's central mechanistic result. In
 the one model whose hazard *representation* is shared across languages, the
 causal *lever* that flips refusal behaviour is not: a probe can read the
 concept out of Kiswahili activations, but pulling the English-derived
-refusal direction out of the model leaves Kiswahili refusal fully intact.
+refusal direction out of the model leaves Kiswahili refusal essentially
+unchanged.
 Whatever implements cross-lingual safety here, it is not the single
 universal direction reported at frontier scale in already safety-aligned,
 English-dominant-pretrained models (Wang et al., 2025). This result carries
@@ -386,7 +438,8 @@ studies (including ours) should not extrapolate. Both full runs published.
    authored by non-native speaker pending native review [update if review
    happens].
 4. Steering: single seed/method/layer; probes correlational.
-5. Small eval cells (n=16–24); greedy decoding only.
+5. Small eval cells (n=16–32 depending on the topic/phrasing combination);
+   greedy decoding only.
 6. SFT degrades generation diversity (memorised templates), capability cost
    not fully characterised (no post-SFT perplexity table yet [add if run]).
 
@@ -395,11 +448,13 @@ studies (including ours) should not extrapolate. Both full runs published.
 Three dissociations emerged that a single aggregate metric would have hidden.
 
 **Behaviour can transfer without generalising.** Bilingual outcome-based
-training moved refusal across a language boundary (0.69 SW) while remaining
-almost entirely unable to handle a hazard it had not been shown (0.25 SW OOD).
-A safety evaluation that tested only trained topics in both languages would
-have scored this model as a cross-lingual success. Ours scored it as
-two-language memorisation.
+training moved refusal across a language boundary almost perfectly on
+trained topics (0.98 SW) while remaining almost entirely unable to handle a
+hazard it had not been shown (0.25 SW OOD). A safety evaluation that tested
+only trained topics in both languages would have scored this model as a
+clean cross-lingual success. Ours scored it as two-language memorisation,
+because half of that apparent Kiswahili success is not transfer at all: the
+model was trained directly on Kiswahili refusals for these same topics.
 
 **Generalisation required reasons, but reasons alone were not enough.**
 English-only process training (reasons, but one language) produced exactly
@@ -413,8 +468,9 @@ underlying feature learnable.
 **Concept sharing and causal control are separable.** In the bilingual-process
 model, a hazard probe trained on English activations transferred to Kiswahili
 at 0.91, yet ablating the English-derived refusal direction, which reliably
-disables English refusal, left Kiswahili refusal completely intact. Shared
-representation did not imply shared machinery. This contrasts with reports
+disables English refusal, left Kiswahili refusal essentially unchanged (0.875
+to 0.913, if anything slightly higher, not lower). Shared representation did
+not imply shared machinery. This contrasts with reports
 that refusal directions are language-universal in large aligned models
 (arXiv:2505.17306): at 48M with balanced bilingual pretraining, universality
 did not emerge on its own. Whether it appears with scale, with more languages,
