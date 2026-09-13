@@ -128,5 +128,7 @@ degradation at all.
 
 ## License
 
-Code Apache-2.0. Model weights Apache-2.0. Datasets and documentation CC-BY.
+Code and model weights: Apache-2.0, see [LICENSE](LICENSE).
+Documentation, the paper, and dataset/model cards: CC BY 4.0, see
+[docs/LICENSE-DATA.md](docs/LICENSE-DATA.md).
 Upstream corpora retain their own licenses, listed in the dataset card.
