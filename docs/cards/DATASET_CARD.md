@@ -14,7 +14,7 @@ tags:
 # salama-lm datasets: a balanced EN/SW pretraining mixture + alignment conditions
 
 Two things are released here: (1) the **recipe and manifests** for a 1.24B-token
-balanced English–Kiswahili pretraining corpus, and (2) the **fully synthetic
+balanced English-Kiswahili pretraining corpus, and (2) the **fully synthetic
 alignment datasets** used in the experiment. Upstream corpora are not
 redistributed, scripts rebuild them from their original sources with
 checksums, so the mixture is reproducible without us re-hosting other people's
@@ -93,7 +93,7 @@ no code-switched text in any training file.
    from sw_web and sw_wiki. Labelled machine-translated everywhere.
 2. **cs_text is not real code-switching.** Natural East African code-switching
    (including Sheng) is intra-sentential and lexically creative; ours alternates
-   whole sentences. No open EN–SW code-switched corpus exists at scale
+   whole sentences. No open EN-SW code-switched corpus exists at scale
    (verified 2026-07-29); this is the honest fallback, exactly reproducible
    from the seed.
 3. **A caught bug, documented.** The first synthesis shuffled sentence pairs
@@ -102,7 +102,7 @@ no code-switched text in any training file.
    Fixed by consuming pairs in source order. A reminder that dataset quality
    checks that only look at surface statistics can pass on unusable data.
 4. **A corrected plan, documented.** The design report specified OPUS-100 for
-   parallel data; OPUS-100 has **no English–Kiswahili pair** at all. Parallel
+   parallel data; OPUS-100 has **no English-Kiswahili pair** at all. Parallel
    data instead comes from the MT job's sentence alignment. Both the error and
    the fix are recorded in `docs/DATA.md`.
 5. **Kiswahili authored by a non-native speaker** (alignment templates, eval

@@ -45,7 +45,7 @@ export default function App() {
         <h1 className="text-[15px] font-semibold">salama-lm <span className="text-faint font-normal">monitor</span></h1>
         <Chip text={conn === "live" ? "live" : conn} lvl={conn === "live" ? "good" : conn === "error" ? "crit" : "info"} />
         <span className="text-[12px] text-muted">GPU <b className="text-ink">{fmt(g.util_pct)}%</b></span>
-        <span className="text-[12px] text-muted">VRAM <b className="text-ink">{vramPct ? fmt(vramPct) : "–"}%</b></span>
+        <span className="text-[12px] text-muted">VRAM <b className="text-ink">{vramPct ? fmt(vramPct) : "-"}%</b></span>
         <span className="text-[12px] text-muted">CPU <b className="text-ink">{fmt(s.system.cpu.percent)}%</b></span>
         <span className="text-[12px] text-muted">RAM <b className="text-ink">{fmt(s.system.mem.percent)}%</b></span>
         <span className="text-[12px] text-muted">session <b className="text-ink">{dur(s.ts - s.session_started)}</b></span>
@@ -74,8 +74,8 @@ export default function App() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-3">
         <Card label="GPU util" value={fmt(g.util_pct)} unit="%"
           sub={`${g.name?.replace("NVIDIA GeForce ", "") ?? ""} · ${g.source}`} />
-        <Card label="VRAM" value={g.mem_used_mib ? fmt(g.mem_used_mib / 1024, 1) : "–"}
-          unit={`/ ${g.mem_total_mib ? fmt(g.mem_total_mib / 1024, 1) : "–"} GB`}
+        <Card label="VRAM" value={g.mem_used_mib ? fmt(g.mem_used_mib / 1024, 1) : "-"}
+          unit={`/ ${g.mem_total_mib ? fmt(g.mem_total_mib / 1024, 1) : "-"} GB`}
           lvl={level(vramPct, th.gpu_vram_pct)} bar={vramPct != null ? { pct: vramPct } : undefined} />
         <Card label="GPU temp" value={fmt(g.temp_c)} unit="°C"
           lvl={level(g.temp_c, th.gpu_temp_c)}

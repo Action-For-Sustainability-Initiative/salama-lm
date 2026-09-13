@@ -96,7 +96,7 @@ def steering_figure() -> None:
                 marker="o", ms=4, color=colors[lang], label=lang.upper(), lw=2)
     ax.set_xlabel("added direction strength")
     ax.set_ylabel("induced refusal on benign prompts")
-    ax.set_title(f"dose–response ({available[-1][1]})", fontsize=10)
+    ax.set_title(f"dose-response ({available[-1][1]})", fontsize=10)
     ax.legend(frameon=False, fontsize=8)
     fig.suptitle("English-derived refusal direction: ablation and injection", fontsize=11)
     fig.tight_layout()

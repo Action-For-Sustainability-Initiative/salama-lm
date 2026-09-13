@@ -5,7 +5,7 @@ committed result file (`logs/results/`, `logs/probes_*.json`,
 `logs/steering_*.json`); nothing is projected or estimated unless marked.*
 
 **Author:** [author name] · **Code, checkpoints, data recipes:**
-github.com/Elisha-Seme/salama-lm · Code Apache-2.0, text CC-BY
+github.com/Action-For-Sustainability-Initiative/salama-lm · Code Apache-2.0, text CC-BY
 
 ---
 
@@ -56,9 +56,9 @@ request into a low-resource language bypasses frontier-model safeguards at
 high rates (Yong et al. 2023), code-switched prompts yield 46.7% more
 successful attacks than their English equivalents (Yoo et al. 2025), and
 multi-turn attacks in Kiswahili elicit harmful responses from commercial
-systems 41.8–70.9% of the time (Marx & Dunaiski, 2026). Coverage, not any
+systems 41.8-70.9% of the time (Marx & Dunaiski, 2026). Coverage, not any
 special fragility of Kiswahili, appears to be the issue: the same study
-reports *higher* rates in English (52.7–83.6%), and of 24 leading models
+reports *higher* rates in English (52.7-83.6%), and of 24 leading models
 claiming multilingual support, only five report any multilingual safety
 alignment or red-teaming at all (Yong et al. 2025). The phenomenon is well
 documented. Its *cause* is not, because every study of it shares a confound
@@ -111,7 +111,7 @@ the same afternoon on one consumer GPU.
 
 ## 2. Related work
 
-**The multilingual safety gap.** That English-centric alignment fails to travel across languages is by now well documented, and we cite this literature rather than claim to extend it. Yong et al. (2023) showed that translating AdvBench prompts into low-resource languages elicits actionable harmful content from GPT-4 79% of the time when pooled across Zulu, Scots Gaelic, Hmong and Guarani. Deng et al. (2024) quantified the everyday version of the same failure, finding low-resource languages roughly three times likelier to surface harmful content in the *unintentional* setting of ordinary non-English queries, alongside 80.92%/40.71% unsafe rates for ChatGPT/GPT-4 under deliberate multilingual attack. Yoo et al. (2025) extended Deng et al.'s 315 Multi-Jail seeds into code-switched form, obtaining 46.7% more successful attacks than the equivalent English prompts and reporting a correlation between a language's resource level and its alignment quality. For African languages specifically, Marx & Dunaiski (2026) find that *multi-turn* conversations bypass guardrails across five commercial systems, with Kiswahili harmful-response rates of 41.8%–70.9% (notably below their English rates of 52.7%–83.6%, so the gap is about coverage rather than Kiswahili being uniquely fragile) while TukaBench (Akinode et al. 2026) extends JailbreakBench to seven African languages across translated, culturally adapted, curated and code-switched settings, and documents degraded LLM-as-judge reliability in low-resource languages. Closest to our intervention, Krasnodębska et al. (2026) show through controlled DPO that English-only alignment is insufficient for cross-lingual safety even within a harm category, though on already-aligned models and over twelve European languages. Yong et al. (2025) supply the structural explanation: of 24 top-ranking Chatbot Arena models with public system reports, 20 claim broad multilingual support but only 5 report multilingual safety alignment training or red-teaming.
+**The multilingual safety gap.** That English-centric alignment fails to travel across languages is by now well documented, and we cite this literature rather than claim to extend it. Yong et al. (2023) showed that translating AdvBench prompts into low-resource languages elicits actionable harmful content from GPT-4 79% of the time when pooled across Zulu, Scots Gaelic, Hmong and Guarani. Deng et al. (2024) quantified the everyday version of the same failure, finding low-resource languages roughly three times likelier to surface harmful content in the *unintentional* setting of ordinary non-English queries, alongside 80.92%/40.71% unsafe rates for ChatGPT/GPT-4 under deliberate multilingual attack. Yoo et al. (2025) extended Deng et al.'s 315 Multi-Jail seeds into code-switched form, obtaining 46.7% more successful attacks than the equivalent English prompts and reporting a correlation between a language's resource level and its alignment quality. For African languages specifically, Marx & Dunaiski (2026) find that *multi-turn* conversations bypass guardrails across five commercial systems, with Kiswahili harmful-response rates of 41.8%-70.9% (notably below their English rates of 52.7%-83.6%, so the gap is about coverage rather than Kiswahili being uniquely fragile) while TukaBench (Akinode et al. 2026) extends JailbreakBench to seven African languages across translated, culturally adapted, curated and code-switched settings, and documents degraded LLM-as-judge reliability in low-resource languages. Closest to our intervention, Krasnodębska et al. (2026) show through controlled DPO that English-only alignment is insufficient for cross-lingual safety even within a harm category, though on already-aligned models and over twelve European languages. Yong et al. (2025) supply the structural explanation: of 24 top-ranking Chatbot Arena models with public system reports, 20 claim broad multilingual support but only 5 report multilingual safety alignment training or red-teaming.
 
 **Refusal directions and cross-lingual universality.** Arditi et al. (2024) established that refusal in thirteen open chat models up to 72B is mediated by a one-dimensional residual-stream subspace whose ablation removes refusal and whose addition induces it. Wang et al. (2025) then showed that an English-derived refusal direction transfers near-perfectly to other languages, with the scope condition, which we preserve, that this holds across *safety-aligned* languages (Yoruba is excluded from that result as safety-misaligned). Joad et al. (2026) argue the single-direction account is incomplete rather than wrong: directions for eleven refusal types are geometrically distinct yet functionally near-equivalent under linear steering. Our steering result, ablating the English-derived direction removes English refusal while leaving Kiswahili refusal intact, is therefore a scale and training contrast against Wang et al., not a contradiction of it: at 48.3M parameters and 1.24B tokens, the shared geometry those papers rely on has not formed.
 
@@ -286,10 +286,10 @@ Main table (from logs/results/summary.md):
 | Condition | refuse EN | refuse SW | refuse CS | false-refuse EN | false-refuse SW |
 |---|---|---|---|---|---|
 | base | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
-| en_outcome | 0.60 [0.60–0.61] | 0.00 | 0.00 | 0.00 | 0.00 |
-| en_process | 0.60 [0.60–0.60] | 0.00 | 0.00 | 0.00 | 0.00 |
-| bi_outcome | 0.62 [0.60–0.65] | 0.69 [0.60–0.74] | 0.67 [0.55–0.75] | 0.00 | 0.00 |
-| bi_process | 0.67 [0.61–0.72] | 0.80 [0.74–0.90] | 0.83 [0.78–0.93] | 0.00 [0.00–0.01] | 0.03 [0.01–0.07] |
+| en_outcome | 0.60 [0.60-0.61] | 0.00 | 0.00 | 0.00 | 0.00 |
+| en_process | 0.60 [0.60-0.60] | 0.00 | 0.00 | 0.00 | 0.00 |
+| bi_outcome | 0.62 [0.60-0.65] | 0.69 [0.60-0.74] | 0.67 [0.55-0.75] | 0.00 | 0.00 |
+| bi_process | 0.67 [0.61-0.72] | 0.80 [0.74-0.90] | 0.83 [0.78-0.93] | 0.00 [0.00-0.01] | 0.03 [0.01-0.07] |
 
 **OOD-topic refusal (3-seed means); the generalisation test:**
 
@@ -333,7 +333,7 @@ Key decomposition:
   template is lexically more distinctive; MT-derived Kiswahili topics are
   more templated and therefore closer in embedding space. We do not
   adjudicate; we flag it as a replication target.
-- Seed spread is real and reported: bi_process's OOD refusal ranges 0.74–0.90
+- Seed spread is real and reported: bi_process's OOD refusal ranges 0.74-0.90
   across seeds in Kiswahili. Single-seed numbers can mislead in either
   direction, e.g. seed 1234 alone gives 0.75 (Kiswahili) and 0.81
   (code-switched) OOD, both within but not centred on the three-seed mean; all
@@ -438,7 +438,7 @@ studies (including ours) should not extrapolate. Both full runs published.
    authored by non-native speaker pending native review [update if review
    happens].
 4. Steering: single seed/method/layer; probes correlational.
-5. Small eval cells (n=16–32 depending on the topic/phrasing combination);
+5. Small eval cells (n=16-32 depending on the topic/phrasing combination);
    greedy decoding only.
 6. SFT degrades generation diversity (memorised templates), capability cost
    not fully characterised (no post-SFT perplexity table yet [add if run]).

@@ -31,7 +31,7 @@ export function ProcessTable({ s }: { s: Sample }) {
                 <td className="pr-2 text-right">{fmt(p.cpu_pct, 1)}</td>
                 <td className="pr-2 text-right">{fmt(p.rss_mb)}</td>
                 <td className="pr-2 text-right text-faint">
-                  {p.connections ? `${p.connections.established}/${p.connections.total}` : "–"}
+                  {p.connections ? `${p.connections.established}/${p.connections.total}` : "-"}
                 </td>
                 <td className="text-faint max-w-56 truncate" title={p.cmd}
                     style={{ direction: "rtl" }}>{p.cmd}</td>
@@ -132,7 +132,7 @@ export function TrainingPanel({ run }: { run: Run }) {
           <span className="text-faint">{run.max_steps ? ` / ${fmt(run.max_steps)}` : ""} steps</span></span>
         <span><b className="text-base font-semibold">{fmt(L.loss, 3)}</b> <span className="text-faint">loss</span></span>
         <span><b className="text-base font-semibold">{fmt(L.tok_per_s)}</b> <span className="text-faint">tok/s</span></span>
-        <span><b className="text-base font-semibold">{L.lr ? L.lr.toExponential(1) : "–"}</b> <span className="text-faint">lr</span></span>
+        <span><b className="text-base font-semibold">{L.lr ? L.lr.toExponential(1) : "-"}</b> <span className="text-faint">lr</span></span>
         {run.active && run.eta_s != null &&
           <span><b className="text-base font-semibold">{dur(run.eta_s)}</b> <span className="text-faint">est. left</span></span>}
       </div>

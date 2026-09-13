@@ -63,7 +63,7 @@ export function AttributionChip({ a }: { a: string }) {
 }
 
 export const fmt = (n: number | null | undefined, d = 0) =>
-  n == null ? "–" : n.toLocaleString("en-US", { maximumFractionDigits: d, minimumFractionDigits: d });
+  n == null ? "-" : n.toLocaleString("en-US", { maximumFractionDigits: d, minimumFractionDigits: d });
 
 export const ago = (ts: number) => {
   const s = Math.max(0, Date.now() / 1000 - ts);

@@ -115,16 +115,16 @@ def main() -> None:
         def fmt(key):
             v = e.get(key)
             if not v:
-                return "–"
+                return "-"
             if v["n_seeds"] == 1:
                 return f"{v['mean']:.2f}"
-            return f"{v['mean']:.2f} [{v['min']:.2f}–{v['max']:.2f}]"
+            return f"{v['mean']:.2f} [{v['min']:.2f}-{v['max']:.2f}]"
         seeds = e["refusal_forbidden_en"]["n_seeds"] if e.get("refusal_forbidden_en") else 0
         lines.append(f"| {cond} | {seeds} | {fmt('refusal_forbidden_en')} | "
                      f"{fmt('refusal_forbidden_sw')} | {fmt('refusal_forbidden_cs')} | "
                      f"{fmt('false_refusal_en')} | {fmt('false_refusal_sw')} | "
-                     f"{e.get('transfer_gap_sw', '–')} | {e.get('transfer_gap_cs', '–')} |")
-    lines.append("\nRanges are min–max across seeds (3 seeds cannot support SEM).")
+                     f"{e.get('transfer_gap_sw', '-')} | {e.get('transfer_gap_cs', '-')} |")
+    lines.append("\nRanges are min-max across seeds (3 seeds cannot support SEM).")
     (results_dir / "summary.md").write_text("\n".join(lines), encoding="utf-8")
     print("\n".join(lines))
 

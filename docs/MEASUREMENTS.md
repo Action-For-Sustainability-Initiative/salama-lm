@@ -36,18 +36,18 @@ memory-bandwidth bound, which is exactly why measured MFU is ~23% (995M
 tokens × 6 × 48.3M params = 2.88e17 FLOPs; at 25.4 TFLOPS that is 3.2 h of
 pure compute against 13.7 h of wall-clock). Raising the power limit would
 change nothing. The remaining ~19% clock gap (2505 vs 3105 MHz) is ordinary
-GPU-Boost bin reduction at 80–86 °C, which does not set a slowdown flag.
+GPU-Boost bin reduction at 80-86 °C, which does not set a slowdown flag.
 
 ## Sustained-load behaviour (1,800 steps ≈ 66M tokens)
 
 | Segment | tok/s avg | GPU temp avg | power avg |
 |---|---|---|---|
-| steps 0–580 | 18,123 | 79.9 °C | 77.4 W |
-| steps 600–1180 | 17,998 | 81.6 °C | 76.7 W |
-| steps 1200–1800 | 18,284 | 79.6 °C | 74.8 W |
+| steps 0-580 | 18,123 | 79.9 °C | 77.4 W |
+| steps 600-1180 | 17,998 | 81.6 °C | 76.7 W |
+| steps 1200-1800 | 18,284 | 79.6 °C | 74.8 W |
 
 **No thermal degradation.** Throughput, temperature and power are flat across
-the run; the low per-record minima (6.2–7.9K tok/s) are validation steps, which
+the run; the low per-record minima (6.2-7.9K tok/s) are validation steps, which
 add work to those intervals. The design report's concern about laptop thermal
 decay over multi-hour runs was overstated for this workload; the card settles
 at ~80 °C and stays there. Steady-state throughput is ~18,100 tok/s including
@@ -97,10 +97,10 @@ compute-bound regime (76,243 × 11.5/48.3 ≈ 18,200, close to the measured
 |---|---|
 | "59 W power cap … the dominant throughput constraint" | **Wrong**; no such cap. Enforced limit 125 W, draw 81 W, zero throttle flags. The limiter is memory bandwidth / arithmetic intensity (~23% MFU) |
 | Laptop thermal decay over sustained runs is a risk | **Overstated**, flat 80 °C and flat throughput across 1,800 steps |
-| 40M primary, micro-batch 24–32 fits | **Wrong**, 24 spills; 8 is optimal |
-| 8–14 h for the primary run | 13.7 h projected at measured speed for 995M tokens, inside the range, but only after the batch fix; the naive config would have taken **60 h** |
-| ~25–40K tok/s at 40M scale | **20,235 tok/s** measured at 48.3M; the estimate was ~1.5× optimistic |
-| Peak VRAM ~4.5–6 GB | 3863 MiB at the chosen setting, better than estimated |
+| 40M primary, micro-batch 24-32 fits | **Wrong**, 24 spills; 8 is optimal |
+| 8-14 h for the primary run | 13.7 h projected at measured speed for 995M tokens, inside the range, but only after the batch fix; the naive config would have taken **60 h** |
+| ~25-40K tok/s at 40M scale | **20,235 tok/s** measured at 48.3M; the estimate was ~1.5× optimistic |
+| Peak VRAM ~4.5-6 GB | 3863 MiB at the chosen setting, better than estimated |
 
 ## Final primary-run configuration
 

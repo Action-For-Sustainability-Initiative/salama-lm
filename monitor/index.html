@@ -129,7 +129,7 @@
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
-const fmt = (n, d=0) => n == null ? "–" : Number(n).toLocaleString("en-US", {maximumFractionDigits: d, minimumFractionDigits: d});
+const fmt = (n, d=0) => n == null ? "-" : Number(n).toLocaleString("en-US", {maximumFractionDigits: d, minimumFractionDigits: d});
 const hist = { gpu: [], cpu: [] };          // client-side history for sparklines
 const HIST_MAX = 90;                        // ~3 minutes at 2s polling
 

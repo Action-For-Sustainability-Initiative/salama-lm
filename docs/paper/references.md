@@ -30,13 +30,13 @@ Maini, P. et al. (2025). *Safety Pretraining: Toward the Next Generation of
 Safe AI.* arXiv:2504.16980.
 
 Marx & Dunaiski (2026). *Multilingual jailbreaking of LLMs using low-resource
-languages.* arXiv:2605.18239. Kiswahili harmful-response rates 41.8–70.9%
-under multi-turn attack; note their English rates are *higher* (52.7–83.6%).
+languages.* arXiv:2605.18239. Kiswahili harmful-response rates 41.8-70.9%
+under multi-turn attack; note their English rates are *higher* (52.7-83.6%).
 
 O'Brien et al. (2025). *Deep Ignorance: Filtering Pretraining Data Builds
 Tamper-Resistant Safeguards.* arXiv:2508.06601.
 
-Patil et al. (2025). *Regional-TinyStories.* IJCNLP-AACL 2025 Findings. TinyStories extended to Hindi/Marathi/Bangla at ~4.5M–157M parameters.
+Patil et al. (2025). *Regional-TinyStories.* IJCNLP-AACL 2025 Findings. TinyStories extended to Hindi/Marathi/Bangla at ~4.5M-157M parameters.
 
 Pop, F. Rosenblatt, J. de Lucena, D. S. & Vaiana, M. (2024). *Rethinking
 harmless refusals when fine-tuning foundation models.* ICLR 2024 AGI Workshop.
@@ -64,7 +64,7 @@ Yoruba is excluded as safety-misaligned.
 
 Wu, S. Conneau, A. Li, H. Zettlemoyer, L. & Stoyanov, V. (2019). *Emerging
 Cross-lingual Structure in Pretrained Language Models.* arXiv:1911.01464.
-Published as Conneau, A. Wu, S. et al. (2020), ACL 2020, pp. 6022–6034,
+Published as Conneau, A. Wu, S. et al. (2020), ACL 2020, pp. 6022-6034,
 https://aclanthology.org/2020.acl-main.536/. **Citation corrected:** an
 earlier draft cited "Conneau et al. 2019", which pairs the ACL author order
 with the arXiv year and matches neither record.
